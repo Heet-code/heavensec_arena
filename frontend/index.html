@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HavenSec Arena</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <h2>HavenSec Arena</h2>
+      <nav>
+        <ul>
+          <li><a href="#dashboard" class="active">Dashboard</a></li>
+          <li><a href="#arena">Live Arena</a></li>
+          <li><a href="#reports">Reports</a></li>
+        </ul>
+      </nav>
+    </aside>
+    <main class="content">
+      <header>
+        <h1>Cybersecurity Simulation Platform</h1>
+        <div class="status-indicator">
+          <span class="dot green"></span>
+          <span>System Online</span>
+        </div>
+      </header>
+      
+      <section id="dashboard" class="view active">
+        <div class="card setup-card">
+          <h3>Create New Exercise</h3>
+          <p>Launch a deterministic cyber-range scenario.</p>
+          <button id="btn-create-scenario">Start Simulation</button>
+        </div>
+      </section>
+
+      <section id="arena" class="view">
+        <div class="arena-header">
+          <h3>Live Arena - Exercise <span id="exercise-id-display">None</span></h3>
+          <span id="phase-badge" class="badge">idle</span>
+        </div>
+        
+        <div class="arena-grid">
+          <div class="panel">
+            <h4>Red Team Activity</h4>
+            <ul id="red-team-log" class="log-list"></ul>
+          </div>
+          
+          <div class="panel main-panel">
+            <h4>Live Telemetry Stream</h4>
+            <table class="telemetry-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Type</th>
+                  <th>Source</th>
+                  <th>Actor</th>
+                </tr>
+              </thead>
+              <tbody id="telemetry-body">
+              </tbody>
+            </table>
+          </div>
+          
+          <div class="panel">
+            <h4>Blue Team Activity</h4>
+            <ul id="blue-team-log" class="log-list"></ul>
+          </div>
+        </div>
+
+        <div class="panel score-panel hidden" id="score-panel">
+          <h4>Final Referee Evaluation</h4>
+          <div id="score-details"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

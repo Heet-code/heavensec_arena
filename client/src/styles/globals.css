@@ -1,0 +1,150 @@
+/* ============================================================
+   HAVENSEC ARENA — GLOBAL STYLES
+   Tailwind CSS base + custom design tokens
+   ============================================================ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 8px;
+  }
+
+  * {
+    @apply box-border;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 14px;
+  }
+
+  body {
+    @apply bg-haven-bg text-haven-text;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    line-height: 1.55;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-haven-primary outline-offset-2;
+  }
+
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-haven-border-strong rounded; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-haven-muted; }
+}
+
+@layer components {
+  /* ---- TYPOGRAPHY ---- */
+  .page-title   { @apply text-2xl font-bold text-haven-text leading-tight; }
+  .section-title { @apply text-lg font-semibold text-haven-text; }
+  .card-title   { @apply text-base font-semibold text-haven-text; }
+  .body-text    { @apply text-base text-haven-secondary; }
+  .meta-text    { @apply text-xs text-haven-muted; }
+  .mono-text    { font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+  .label-upper  { @apply text-2xs font-semibold uppercase tracking-wider text-haven-muted; }
+
+  /* ---- CARD ---- */
+  .card {
+    @apply bg-haven-surface rounded-lg border border-haven-border shadow-card;
+  }
+  .card-hover {
+    @apply card transition-shadow duration-150 hover:shadow-card-hover hover:border-haven-border-strong cursor-pointer;
+  }
+  .card-padding  { @apply p-5; }
+  .card-padding-sm { @apply p-3; }
+  .card-padding-lg { @apply p-7; }
+
+  /* ---- STATUS DOT ---- */
+  .status-dot {
+    @apply inline-block rounded-full flex-shrink-0;
+    width: 7px;
+    height: 7px;
+  }
+
+  /* ---- TELEMETRY ROW ---- */
+  .telemetry-row {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    @apply flex gap-3 items-start px-4 py-1 border-b border-haven-bg hover:bg-haven-bg transition-colors duration-100 animate-slide-in-right;
+  }
+
+  /* ---- AGENT CARD ---- */
+  .agent-card {
+    @apply card p-3 transition-all duration-200;
+  }
+  .agent-card-active {
+    @apply border-haven-primary/40 bg-haven-primary-light/30;
+  }
+
+  /* ---- PHASE BADGE ---- */
+  .phase-pill {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-2xs font-semibold uppercase tracking-wide;
+  }
+
+  /* ---- SCORE RING ---- */
+  .score-ring-text {
+    @apply absolute inset-0 flex items-center justify-center;
+  }
+}
+
+@layer utilities {
+  .truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .shimmer-bg {
+    background: linear-gradient(90deg, #f3f4f6 25%, #e9eaec 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    @apply animate-shimmer;
+  }
+}
+
+/* ---- REACT FLOW OVERRIDES ---- */
+.react-flow__background {
+  background-color: #f9fafb !important;
+}
+.react-flow__edge-path {
+  stroke: #d1d5db;
+  stroke-width: 1.5;
+}
+.react-flow__controls {
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1) !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+}
+.react-flow__controls-button {
+  background: white !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  color: #57606a !important;
+}
+.react-flow__minimap {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+}
+
+/* ---- RECHARTS OVERRIDES ---- */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: #f3f4f6;
+}
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  border-radius: 8px !important;
+  border: 1px solid #e5e7eb !important;
+  font-size: 12px !important;
+}
+
+/* ---- PRINT STYLES ---- */
+@media print {
+  .no-print { display: none !important; }
+  .card { box-shadow: none !important; border: 1px solid #e5e7eb !important; }
+}
