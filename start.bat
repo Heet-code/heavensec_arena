@@ -1,43 +1,29 @@
 @echo off
-title HavenSec Arena
+title HavenSec Arena - Launch Controller
 color 0B
 
 echo.
-echo  =========================================
-echo    HavenSec Arena - Starting...
-echo  =========================================
+echo  ======================================================
+echo    HavenSec Arena - Cyber-Resilience Simulation Platform
+echo  ======================================================
 echo.
 
 cd /d %~dp0
 
-REM Install if node_modules missing
-if not exist "node_modules" (
-    echo  Installing dependencies...
-    call npm install
-    echo  Done.
-    echo.
-)
-
-REM Build server if dist missing
-if not exist "server\dist\index.js" (
-    echo  Building server...
-    call node_modules\.bin\tsc.cmd -p server\tsconfig.json
-    echo  Done.
-    echo.
-)
-
-echo  Starting backend on http://localhost:3001 ...
-start "HavenSec - Backend" cmd /k "cd /d %~dp0 && node server/dist/index.js"
+echo  [1/2] Launching Python FastAPI Backend on http://127.0.0.1:9002 ...
+start "HavenSec - FastAPI Backend" cmd /k "cd /d %~dp0\backend && python -m uvicorn api:app --host 127.0.0.1 --port 9002"
 
 timeout /t 2 /nobreak >nul
 
-echo  Starting frontend on http://localhost:5174 ...
-echo.
-echo  App will open at: http://localhost:5174
-echo.
-echo  Close this window to stop the frontend.
-echo  Close the Backend window to stop the API.
-echo.
+echo  [2/2] Launching Vanilla JS Frontend on http://127.0.0.1:8080 ...
+start "HavenSec - Web UI" cmd /k "cd /d %~dp0\frontend && python -m http.server 8080"
 
-cd client
-..\node_modules\.bin\vite.cmd --open
+timeout /t 1 /nobreak >nul
+
+echo.
+echo  Platform is online!
+echo  Access Web Interface at: http://127.0.0.1:8080
+echo  API Documentation at:    http://127.0.0.1:9002/docs
+echo.
+start http://127.0.0.1:8080
+pause

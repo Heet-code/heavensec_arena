@@ -1,52 +1,48 @@
 #!/usr/bin/env pwsh
 # HavenSec Arena — Start Script (PowerShell)
-# Double-click or run from PowerShell terminal
 
 $root = $PSScriptRoot
 if (-not $root) { $root = Get-Location }
 
 Write-Host ""
-Write-Host "=======================================" -ForegroundColor Cyan
-Write-Host "  HavenSec Arena — Starting Up" -ForegroundColor Cyan
-Write-Host "=======================================" -ForegroundColor Cyan
+Write-Host "======================================================" -ForegroundColor Cyan
+Write-Host "  HavenSec Arena — Cyber-Resilience Platform Startup" -ForegroundColor Cyan
+Write-Host "======================================================" -ForegroundColor Cyan
 Write-Host ""
 
-$vite = Join-Path $root "node_modules\.bin\vite.cmd"
-$tsnodedev = Join-Path $root "node_modules\.bin\ts-node-dev.cmd"
-$npmCmd = "C:\Program Files\nodejs\npm.cmd"
-
-# Install if needed
-if (-not (Test-Path $vite)) {
-    Write-Host "Installing dependencies..." -ForegroundColor Yellow
-    & $npmCmd install
-    Write-Host "Done." -ForegroundColor Green
-    Write-Host ""
-}
-
-Write-Host "Starting backend API  →  http://localhost:3001" -ForegroundColor White
-Write-Host "Starting frontend     →  http://localhost:5174" -ForegroundColor White
-Write-Host ""
-Write-Host "Press Ctrl+C to stop." -ForegroundColor DarkGray
-Write-Host ""
-
-# Start backend as background job
+Write-Host "[1/2] Starting Python FastAPI Backend on http://127.0.0.1:9002 ..." -ForegroundColor Yellow
 $backendJob = Start-Job -Name "HavenSecBackend" -ScriptBlock {
-    Set-Location (Join-Path $using:root "server")
-    & $using:tsnodedev --respawn --transpile-only src/index.ts
+    Set-Location (Join-Path $using:root "backend")
+    python -m uvicorn api:app --host 127.0.0.1 --port 9002
 }
 
-# Give backend 3s to start, show its output
-Start-Sleep -Seconds 3
+Start-Sleep -Seconds 2
 
-# Launch frontend (blocking — keeps terminal alive)
+Write-Host "[2/2] Starting Vanilla HTML5/JS Frontend on http://127.0.0.1:8080 ..." -ForegroundColor Yellow
+$frontendJob = Start-Job -Name "HavenSecFrontend" -ScriptBlock {
+    Set-Location (Join-Path $using:root "frontend")
+    python -m http.server 8080
+}
+
+Start-Sleep -Seconds 1
+
+Write-Host ""
+Write-Host "  Platform is online!" -ForegroundColor Green
+Write-Host "  Web Dashboard:     http://127.0.0.1:8080" -ForegroundColor White
+Write-Host "  API Docs (Swagger): http://127.0.0.1:9002/docs" -ForegroundColor White
+Write-Host ""
+Write-Host "Press Ctrl+C to stop services." -ForegroundColor DarkGray
+
+# Open default browser
+Start-Process "http://127.0.0.1:8080"
+
 try {
-    Set-Location (Join-Path $root "client")
-    & $vite --open
+    while ($true) {
+        Start-Sleep -Seconds 1
+    }
 } finally {
-    Write-Host ""
-    Write-Host "Stopping backend..." -ForegroundColor Yellow
-    Stop-Job $backendJob -ErrorAction SilentlyContinue
-    Remove-Job $backendJob -ErrorAction SilentlyContinue
-    Set-Location $root
-    Write-Host "Stopped." -ForegroundColor Green
+    Write-Host "`nStopping services..." -ForegroundColor Yellow
+    Stop-Job $backendJob, $frontendJob -ErrorAction SilentlyContinue
+    Remove-Job $backendJob, $frontendJob -ErrorAction SilentlyContinue
+    Write-Host "HavenSec Arena stopped." -ForegroundColor Green
 }

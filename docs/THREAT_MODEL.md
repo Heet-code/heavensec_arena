@@ -1,20 +1,20 @@
-# Threat Model
+# HavenSec Arena — Threat Model & Cyber-Range Safety Boundary
 
-## Assumptions
-- HavenSec Arena is a simulated environment intended for training and evaluation.
-- All "attacks" are entirely synthetic. No actual network traffic or exploit payloads are sent to real infrastructure.
+## 1. Safety Boundary & Synthetic Confinement Principle
+HavenSec Arena is an educational and enterprise simulation platform. **At no point does the application generate live malware, execute destructive binaries, scan external networks, or interact with real production credentials.**
 
-## Assets
-- **Simulation Data:** Exercise results, historical scores, incident logs.
-- **Application Availability:** The ability for users to start and run simulations.
-- **API Keys (Optional AI Integration):** OpenAI/IBM Watsonx API keys.
+### Confinement Controls
+1. **Synthetic Assets Only:** All attacks are directed at simulated entities (`WEB-01`, `API-01`, `AUTH-01`, `DB-01`, `FILE-01`).
+2. **Metadata-Only Operations:** Ransomware scenarios emit simulated encryption-intent events and file entropy telemetry; no physical file encryption occurs on the host machine.
+3. **Internal Loopback / Container Isolation:** All networking is confined to loopback (`127.0.0.1`) or the Docker Compose internal bridge network.
+4. **Simulated Containment:** Response actions (e.g. account lockout, IP blocking, endpoint quarantine) update in-memory and database state records; no host OS user accounts or physical network interfaces are modified.
 
-## Threats
-1. **Simulation Tampering:** A user could modify the database (`database.sqlite`) directly to cheat on an exercise score.
-   - *Mitigation:* In an academic context, local SQLite tampering is out-of-scope for product defense but can be mitigated by moving the database to a secured server in production.
-2. **API Abuse:** The REST API does not have rate-limiting.
-   - *Mitigation:* The product is meant to be run locally or within an isolated network.
-3. **Cross-Site Scripting (XSS):** If user input is reflected in the simulation reports.
-   - *Mitigation:* React's default DOM escaping protects against XSS in the UI.
-4. **Credential Leakage:** Hardcoded API keys in source code.
-   - *Mitigation:* The `.env` file should never be committed, and fallback deterministic mechanisms ensure the application functions safely without external AI services.
+## 2. Threat Analysis of the Simulation Platform Itself
+
+| Threat | Risk | Mitigation |
+|---|---|---|
+| **Malicious Payload Injection via API** | Medium | Strict Pydantic model validation on all incoming JSON payloads; rejection of unexpected fields. |
+| **Cross-Site Scripting (XSS) in SOC UI** | Medium | Mandatory `escapeHtml()` sanitization on all telemetry strings, actor names, and payloads before DOM rendering. |
+| **SQL Injection (SQLi)** | High | Parameterized queries used across all SQLite database transactions in `backend/database.py`. |
+| **Orphaned Asynchronous Tasks** | Low | Orchestrator maintains an `active_simulation_tasks` registry with cancellation hooks and auto-cleanup in `finally` blocks. |
+| **Denial of Service via Infinite Loops** | Low | Simulation ticks are bounded by explicit timeline limits (15 seconds) and lifecycle state guards. |

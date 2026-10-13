@@ -2,80 +2,398 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>HavenSec Arena</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HavenSec Arena — Cyber-Resilience Simulation Platform</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="app-container">
+  <div class="app-layout">
+    <!-- Sidebar Navigation -->
     <aside class="sidebar">
-      <h2>HavenSec Arena</h2>
-      <nav>
+      <div class="brand">
+        <div class="logo-shield">H</div>
+        <div class="brand-text">
+          <h2>HavenSec Arena</h2>
+          <span class="subtext">Cyber-Resilience Lab</span>
+        </div>
+      </div>
+      
+      <nav class="nav-menu">
         <ul>
-          <li><a href="#dashboard" class="active">Dashboard</a></li>
-          <li><a href="#arena">Live Arena</a></li>
-          <li><a href="#reports">Reports</a></li>
+          <li><a href="#overview" class="nav-link active" data-view="overview">Overview</a></li>
+          <li><a href="#scenarios" class="nav-link" data-view="scenarios">Scenario Library</a></li>
+          <li><a href="#setup" class="nav-link" data-view="setup">Exercise Setup</a></li>
+          <li><a href="#arena" class="nav-link" data-view="arena">Live Arena</a></li>
+          <li><a href="#referee" class="nav-link" data-view="referee">Referee Evaluation</a></li>
+          <li><a href="#coach" class="nav-link" data-view="coach">Security Coach</a></li>
+          <li><a href="#history" class="nav-link" data-view="history">Exercise History</a></li>
+          <li><a href="#reports" class="nav-link" data-view="reports">Reports & Audit</a></li>
         </ul>
       </nav>
-    </aside>
-    <main class="content">
-      <header>
-        <h1>Cybersecurity Simulation Platform</h1>
+
+      <div class="system-status-box">
         <div class="status-indicator">
-          <span class="dot green"></span>
-          <span>System Online</span>
+          <span id="backend-status-dot" class="dot amber"></span>
+          <span id="backend-status-text">Connecting...</span>
+        </div>
+        <div class="api-target-info">
+          <small id="api-target-display">API: Detecting...</small>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <header class="top-bar">
+        <div class="page-title-box">
+          <h1 id="page-heading">Executive Overview</h1>
+          <p id="page-subheading">Continuously simulated cyber-threats, empirical defense metrics, and adaptive resilience.</p>
+        </div>
+        <div class="header-actions">
+          <button id="btn-quick-launch" class="btn btn-primary">+ Launch Simulation</button>
         </div>
       </header>
-      
-      <section id="dashboard" class="view active">
-        <div class="card setup-card">
-          <h3>Create New Exercise</h3>
-          <p>Launch a deterministic cyber-range scenario.</p>
-          <button id="btn-create-scenario">Start Simulation</button>
-        </div>
-      </section>
 
-      <section id="arena" class="view">
-        <div class="arena-header">
-          <h3>Live Arena - Exercise <span id="exercise-id-display">None</span></h3>
-          <span id="phase-badge" class="badge">idle</span>
-        </div>
-        
-        <div class="arena-grid">
-          <div class="panel">
-            <h4>Red Team Activity</h4>
-            <ul id="red-team-log" class="log-list"></ul>
-          </div>
-          
-          <div class="panel main-panel">
-            <h4>Live Telemetry Stream</h4>
-            <table class="telemetry-table">
-              <thead>
-                <tr>
-                  <th>Time</th>
-                  <th>Type</th>
-                  <th>Source</th>
-                  <th>Actor</th>
-                </tr>
-              </thead>
-              <tbody id="telemetry-body">
-              </tbody>
-            </table>
-          </div>
-          
-          <div class="panel">
-            <h4>Blue Team Activity</h4>
-            <ul id="blue-team-log" class="log-list"></ul>
-          </div>
-        </div>
+      <div class="view-container">
+        <!-- 1. OVERVIEW VIEW -->
+        <section id="view-overview" class="view-panel active">
+          <div class="metrics-hero-grid">
+            <div class="metric-card">
+              <span class="metric-label">Latest Overall Resilience</span>
+              <div class="metric-value-box">
+                <span id="ov-resilience-score" class="metric-value">--</span>
+                <span class="metric-unit">/ 100</span>
+              </div>
+              <span id="ov-resilience-badge" class="badge">Awaiting Run</span>
+            </div>
 
-        <div class="panel score-panel hidden" id="score-panel">
-          <h4>Final Referee Evaluation</h4>
-          <div id="score-details"></div>
-        </div>
-      </section>
+            <div class="metric-card">
+              <span class="metric-label">Blue Team Defensive Rating</span>
+              <div class="metric-value-box">
+                <span id="ov-blue-score" class="metric-value text-blue">--</span>
+                <span class="metric-unit">/ 100</span>
+              </div>
+              <span class="subtext">Recall, Precision, & Containment</span>
+            </div>
 
+            <div class="metric-card">
+              <span class="metric-label">Red Team Adversarial Score</span>
+              <div class="metric-value-box">
+                <span id="ov-red-score" class="metric-value text-red">--</span>
+                <span class="metric-unit">/ 100</span>
+              </div>
+              <span class="subtext">Objective Achievement & Stealth</span>
+            </div>
+
+            <div class="metric-card">
+              <span class="metric-label">Total Simulated Runs</span>
+              <div class="metric-value-box">
+                <span id="ov-total-runs" class="metric-value">0</span>
+              </div>
+              <span class="subtext">Persistent in SQLite Store</span>
+            </div>
+          </div>
+
+          <div class="grid-2-col mt-20">
+            <div class="card">
+              <h3>Top Identified Defensive Weakness</h3>
+              <div id="ov-top-weakness-box" class="content-box">
+                <p class="placeholder-text">Run a cyber-exercise to generate empirical security coach insights.</p>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3>Recommended Next Adaptive Exercise</h3>
+              <div id="ov-recommended-box" class="content-box">
+                <p class="placeholder-text">The Security Coach automatically selects follow-up scenarios based on observed gaps.</p>
+              </div>
+              <button id="btn-accept-recommendation" class="btn btn-secondary mt-10 hidden">Accept & Configure Recommendation</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. SCENARIO LIBRARY VIEW -->
+        <section id="view-scenarios" class="view-panel">
+          <div class="notice-banner">
+            <strong>100% Synthetic & Safe:</strong> All adversarial actions simulate benign telemetry exclusively against dummy metadata inside the simulated Acme Web Platform lab. No real malware or external network traffic is generated.
+          </div>
+          <div id="scenario-cards-grid" class="cards-grid mt-15">
+            <!-- Populated via app.js -->
+          </div>
+        </section>
+
+        <!-- 3. EXERCISE SETUP VIEW -->
+        <section id="view-setup" class="view-panel">
+          <div class="card setup-form-card">
+            <h3>Configure Cyber-Resilience Exercise</h3>
+            <p class="subtext mb-20">Select an adversarial scenario, difficulty modifier, and reproducibility seed.</p>
+
+            <form id="exercise-form">
+              <div class="form-group">
+                <label for="select-scenario">Adversarial Scenario</label>
+                <select id="select-scenario" class="form-control" required></select>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label for="select-difficulty">Difficulty Level</label>
+                  <select id="select-difficulty" class="form-control">
+                    <option value="beginner">Beginner (Explicit indicators, standard rate)</option>
+                    <option value="intermediate" selected>Intermediate (Realistic dwell time & burst)</option>
+                    <option value="advanced">Advanced (Stealth evasion, multi-asset)</option>
+                  </select>
+                </div>
+
+                <div class="form-group flex-1">
+                  <label for="input-seed">Reproducibility Seed</label>
+                  <input type="number" id="input-seed" class="form-control" value="42" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="input-target-asset">Primary Target Asset</label>
+                <select id="input-target-asset" class="form-control">
+                  <option value="AUTH-01">AUTH-01 (Identity & LDAP Gateway)</option>
+                  <option value="WEB-01">WEB-01 (Web Application & Reverse Proxy)</option>
+                  <option value="API-01">API-01 (REST / GraphQL Endpoint)</option>
+                  <option value="DB-01">DB-01 (Customer Database Server)</option>
+                  <option value="FILE-01">FILE-01 (File & SMB Share Server)</option>
+                </select>
+              </div>
+
+              <div class="form-group" id="linked-exercise-group">
+                <label for="input-linked-prev">Linked Previous Exercise (Optional Adaptive Continuation)</label>
+                <input type="text" id="input-linked-prev" class="form-control" placeholder="e.g. ex-abc12345 (Leave blank for new baseline)">
+              </div>
+
+              <div class="card bg-darker mt-15" id="scenario-preview-box">
+                <h4>Ground-Truth Objectives Preview</h4>
+                <ul id="scenario-preview-objectives" class="bullet-list"></ul>
+              </div>
+
+              <button type="submit" id="btn-submit-exercise" class="btn btn-primary btn-large mt-20">Initialize & Launch Exercise</button>
+            </form>
+          </div>
+        </section>
+
+        <!-- 4. LIVE ARENA VIEW -->
+        <section id="view-arena" class="view-panel">
+          <div class="arena-control-bar">
+            <div class="arena-meta">
+              <span>Active Exercise: <strong id="arena-ex-id">None</strong></span>
+              <span>Scenario: <strong id="arena-scenario-name">--</strong></span>
+              <span id="arena-phase-badge" class="badge badge-idle">IDLE</span>
+            </div>
+            <div class="arena-actions">
+              <button id="btn-cancel-sim" class="btn btn-danger btn-sm hidden">Abort Exercise</button>
+            </div>
+          </div>
+
+          <div class="arena-columns-grid mt-15">
+            <!-- Left: Red Team Activity -->
+            <div class="arena-column">
+              <div class="column-header border-red">
+                <h4>Red Team Adversary</h4>
+                <span class="badge badge-red">Synthetic Attack</span>
+              </div>
+              <div id="red-activity-log" class="activity-feed"></div>
+            </div>
+
+            <!-- Middle: Live Telemetry Stream -->
+            <div class="arena-column flex-2">
+              <div class="column-header border-blue">
+                <h4>Unified Telemetry Stream</h4>
+                <span class="badge badge-blue" id="telemetry-counter">0 Events</span>
+              </div>
+              <div class="table-scroll">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Time</th>
+                      <th>Type</th>
+                      <th>Source Asset</th>
+                      <th>Actor</th>
+                      <th>Severity</th>
+                    </tr>
+                  </thead>
+                  <tbody id="telemetry-stream-body">
+                    <tr><td colspan="5" class="text-center text-muted">Awaiting simulation start...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Right: Blue Team Sentinel & Response -->
+            <div class="arena-column">
+              <div class="column-header border-green">
+                <h4>Blue Team Defense</h4>
+                <span class="badge badge-green">Detection & Response</span>
+              </div>
+              <div id="blue-activity-log" class="activity-feed"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. REFEREE EVALUATION VIEW -->
+        <section id="view-referee" class="view-panel">
+          <div class="card">
+            <div class="referee-header-row">
+              <div>
+                <h2>Independent Referee Evaluation</h2>
+                <p class="subtext">Objective assessment evaluated against pre-established ground-truth threat indicators.</p>
+              </div>
+              <div class="referee-scores-summary">
+                <div class="score-pill">
+                  <span>Resilience</span>
+                  <strong id="ref-resilience-val">--</strong>
+                </div>
+                <div class="score-pill">
+                  <span>Blue Defense</span>
+                  <strong id="ref-blue-val" class="text-blue">--</strong>
+                </div>
+                <div class="score-pill">
+                  <span>Red Adversary</span>
+                  <strong id="ref-red-val" class="text-red">--</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="referee-narrative-box mt-15">
+              <p id="ref-summary-text">No completed evaluation selected. Select a completed exercise from History or launch a simulation.</p>
+            </div>
+
+            <div class="grid-2-col mt-20">
+              <div>
+                <h4>Blue Team Defensive Metrics</h4>
+                <table class="data-table mt-10">
+                  <thead>
+                    <tr><th>Metric Dimension</th><th>Score</th><th>Details</th></tr>
+                  </thead>
+                  <tbody id="ref-blue-metrics-body"></tbody>
+                </table>
+              </div>
+
+              <div>
+                <h4>Red Team Adversarial Metrics</h4>
+                <table class="data-table mt-10">
+                  <thead>
+                    <tr><th>Metric Dimension</th><th>Score</th><th>Details</th></tr>
+                  </thead>
+                  <tbody id="ref-red-metrics-body"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="mt-20">
+              <h4>Scoring Deductions, Bonuses, & Operational Safeguards</h4>
+              <ul id="ref-audit-notes" class="bullet-list mt-10"></ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6. SECURITY COACH VIEW -->
+        <section id="view-coach" class="view-panel">
+          <div class="card">
+            <h2>AI Security Coach & Adaptive Engine</h2>
+            <p class="subtext">Automated post-exercise review linking observed metric gaps to targeted future exercises.</p>
+
+            <div class="coach-card mt-20">
+              <div class="coach-badge-row">
+                <span class="badge badge-amber">Identified Vulnerability</span>
+                <span id="coach-weakness-badge" class="badge">--</span>
+              </div>
+              <h3 id="coach-weakness-title" class="mt-10">Select an evaluated exercise</h3>
+              <p id="coach-recommendation-text" class="mt-10 text-muted">Awaiting exercise data...</p>
+
+              <div class="mt-15">
+                <strong>Empirical Rationale:</strong>
+                <p id="coach-rationale-text" class="subtext mt-5">--</p>
+              </div>
+
+              <div class="mt-15">
+                <strong>Traceable Evidence References:</strong>
+                <div id="coach-evidence-tags" class="tag-cloud mt-5"></div>
+              </div>
+
+              <div class="adaptive-next-action-box mt-20">
+                <div>
+                  <strong>Recommended Follow-up Scenario:</strong>
+                  <span id="coach-next-scenario">--</span>
+                </div>
+                <button id="btn-launch-adaptive-next" class="btn btn-primary btn-sm">Launch Recommended Follow-up</button>
+              </div>
+            </div>
+
+            <!-- Before-and-After Comparison Card -->
+            <div class="card bg-darker mt-20" id="comparison-card">
+              <h3>Before vs. After Adaptive Comparison</h3>
+              <p class="subtext">Measures whether targeted follow-up scenarios closed defensive weaknesses.</p>
+              <div id="comparison-content-box" class="mt-15">
+                <p class="placeholder-text">Run a linked follow-up exercise to display empirical delta improvements.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7. EXERCISE HISTORY VIEW -->
+        <section id="view-history" class="view-panel">
+          <div class="card">
+            <div class="history-header">
+              <h2>Historical Exercise Ledger</h2>
+              <button id="btn-refresh-history" class="btn btn-secondary btn-sm">Refresh List</button>
+            </div>
+            <p class="subtext mb-15">All completed, in-progress, or terminated runs persisted in SQLite.</p>
+
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Exercise ID</th>
+                    <th>Scenario</th>
+                    <th>Difficulty</th>
+                    <th>Resilience</th>
+                    <th>Blue Score</th>
+                    <th>Red Score</th>
+                    <th>Phase</th>
+                    <th>Timestamp</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="history-table-body">
+                  <tr><td colspan="9" class="text-center text-muted">Loading history...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 8. REPORTS VIEW -->
+        <section id="view-reports" class="view-panel">
+          <div class="card">
+            <div class="report-header-row">
+              <div>
+                <h2>Exercise Audit Report</h2>
+                <p class="subtext">Detailed technical breakdown for college evaluation and post-incident review.</p>
+              </div>
+              <div>
+                <button id="btn-print-report" class="btn btn-secondary btn-sm">Print / Save PDF</button>
+              </div>
+            </div>
+
+            <div class="form-group mt-15 max-w-300">
+              <label for="select-report-exercise">Select Exercise</label>
+              <select id="select-report-exercise" class="form-control"></select>
+            </div>
+
+            <div class="report-markdown-preview card bg-darker mt-15" id="report-preview-box">
+              <pre id="report-markdown-content" class="code-block">Select an exercise to generate its technical audit report.</pre>
+            </div>
+          </div>
+        </section>
+      </div>
     </main>
   </div>
+
   <script src="app.js"></script>
 </body>
 </html>

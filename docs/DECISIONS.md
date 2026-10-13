@@ -1,14 +1,21 @@
-# Architectural Decisions
+# HavenSec Arena — Architectural Decision Records (ADRs)
 
-## 1. Using Node.js/Express over Python/FastAPI
-While the initial project specification mentioned a Python backend, the existing codebase provided for the assignment consisted of a robust, fully-functioning React frontend and an in-progress Node.js/Express backend (`server/`).
-**Decision:** We chose to complete the architecture using the existing Node.js/Express backend rather than completely rewriting it in Python.
-**Rationale:** This allowed us to leverage the existing types, interfaces, and API routes, avoiding a complete rewrite that would jeopardize the project timeline while still meeting the functional constraints of the simulation platform.
+## ADR 1: Migration to Python/FastAPI Backend and Vanilla JS Frontend
+- **Context:** The original workspace contained an incomplete mix of TypeScript/Express and Vite/React with conflicting runtimes and mock simulation data.
+- **Decision:** Consolidate active execution to Python 3.11+ / FastAPI for the backend and HTML5 / CSS3 / Vanilla JavaScript for the frontend.
+- **Consequences:** Eliminates Node.js build complexity, provides asynchronous event loops via `asyncio`, enables clean typing with Pydantic, and ensures the UI runs without external bundlers.
 
-## 2. Using `better-sqlite3` over In-Memory Maps
-**Decision:** Replace the `Map`-based storage with `better-sqlite3`.
-**Rationale:** Meets the explicit requirement: "Do not use an in-memory array as the only source of truth for all historical results. Choose a database that suits the actual project constraints. SQLite is acceptable." `better-sqlite3` is synchronous, allowing us to implement a `PersistentMap` class that perfectly matches the existing synchronous service interfaces without needing to refactor all routes to use `async/await`.
+## ADR 2: Relational SQLite Schema vs. Key-Value Store
+- **Context:** An initial prototype used a single `store` table storing JSON blobs.
+- **Decision:** Migrate to a structured relational schema with dedicated tables (`exercises`, `scenarios`, `telemetry`, `alerts`, `incidents`, `response_actions`, `evaluations`, `coach_recommendations`), foreign keys, and indexes.
+- **Consequences:** Provides queryability, integrity constraints, and reliable persistent history for cross-run adaptive comparisons.
 
-## 3. Class-Based AI Agents
-**Decision:** Implemented `RedTeamAgent`, `BlueTeamSentinel`, `InvestigationAnalyst`, and `ResponseCommander` as distinct classes in `agents.ts`.
-**Rationale:** Meets the explicit requirement: "Implement the agents as distinct, testable software components. Their responsibilities must not be cosmetic labels on a dashboard."
+## ADR 3: Independent Referee Agent for Tripartite Scoring
+- **Context:** Simulations previously returned hardcoded static scores (e.g. 85%).
+- **Decision:** Implement an independent `RefereeAgent` that evaluates outcomes against a ground-truth manifest established before simulation execution. Produce distinct Red Team (0–100), Blue Team (0–100), and Cyber-Resilience (0–100) scores.
+- **Consequences:** Red Team score reflects adversarial completion; Blue Team score reflects detection and containment; Resilience score reflects defensive mitigation and residual risk. Resilience is explicitly NOT an average of Red and Blue.
+
+## ADR 4: Deterministic Policy-Based Security Coach
+- **Context:** External LLM APIs introduce non-deterministic failures, latency, and require external API keys.
+- **Decision:** Implement a deterministic baseline adaptation engine using an empirical priority ladder, with clean interface hooks for optional external LLMs.
+- **Consequences:** Fully reproducible, verifiable offline, and guaranteed to produce evidence-linked recommendations and targeted follow-up scenarios.
