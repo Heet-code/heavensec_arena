@@ -84,12 +84,17 @@ function switchView(viewName) {
     referee: ['Referee Evaluation', 'Independent ground-truth audit of adversarial and defensive performance.'],
     coach: ['Security Coach', 'Automated gap analysis, evidence-backed recommendations, and adaptive exercise selection.'],
     history: ['Exercise History', 'Persistent audit ledger of all completed and past simulation exercises.'],
-    reports: ['Reports & Audit', 'Formal technical evaluation reports for viva defense and compliance review.']
+    reports: ['Reports & Audit', 'Formal technical evaluation reports for viva defense and compliance review.'],
+    health: ['System Health & Orchestration', 'Database integrity, multi-agent orchestration runtime, agent roster, and vendor independence.']
   };
 
   if (headingMap[viewName]) {
     document.getElementById('page-heading').textContent = headingMap[viewName][0];
     document.getElementById('page-subheading').textContent = headingMap[viewName][1];
+  }
+
+  if (viewName === 'health') {
+    loadSystemHealth();
   }
 }
 
@@ -559,6 +564,106 @@ async function loadReportContent(exId) {
 }
 
 // -------------------------------------------------------------
+// System Health & Orchestration View
+// -------------------------------------------------------------
+async function loadSystemHealth() {
+  try {
+    const res = await fetch(`${API_BASE}/system/health`);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    document.getElementById('health-api-status').textContent = 'Online';
+    document.getElementById('health-api-status').className = 'metric-value text-green';
+    
+    if (data.database && data.database.connected) {
+      document.getElementById('health-db-status').textContent = 'Connected';
+      document.getElementById('health-db-tables').textContent = `${data.database.tableCount} Tables Verified`;
+    }
+
+    if (data.orchestration) {
+      const mode = data.orchestration.activeMode || 'builtin';
+      document.getElementById('health-orch-mode').textContent = mode.toUpperCase();
+      const select = document.getElementById('select-orch-mode');
+      if (select) select.value = mode;
+
+      const descBox = document.getElementById('orch-mode-desc');
+      if (descBox && data.orchestration.activeOrchestrator) {
+        descBox.textContent = data.orchestration.activeOrchestrator.description;
+      }
+    }
+  } catch (err) {
+    console.error('Error fetching system health:', err);
+  }
+}
+
+async function exportExerciseJson() {
+  const exId = document.getElementById('select-report-exercise').value;
+  if (!exId) {
+    alert('Please select an exercise to export.');
+    return;
+  }
+  try {
+    const res = await fetch(`${API_BASE}/exercises/${exId}`);
+    if (!res.ok) throw new Error('Failed to fetch exercise details');
+    const data = await res.json();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `HavenSec_Exercise_${exId}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    alert('Failed to export JSON: ' + err.message);
+  }
+}
+
+async function exportTelemetryCsv() {
+  const exId = document.getElementById('select-report-exercise').value;
+  if (!exId) {
+    alert('Please select an exercise to export.');
+    return;
+  }
+  try {
+    const res = await fetch(`${API_BASE}/exercises/${exId}/telemetry`);
+    if (!res.ok) throw new Error('Failed to fetch telemetry events');
+    const telemetry = await res.json();
+    if (!telemetry || telemetry.length === 0) {
+      alert('No telemetry records available for this exercise.');
+      return;
+    }
+
+    const headers = ['id', 'timestamp', 'eventType', 'sourceAsset', 'targetAsset', 'actor', 'severity', 'techniqueId', 'phase'];
+    const rows = telemetry.map(t => [
+      t.id || '',
+      t.timestamp || '',
+      t.eventType || '',
+      t.sourceAsset || '',
+      t.targetAsset || '',
+      t.actor || '',
+      t.severity || '',
+      t.techniqueId || '',
+      t.phase || ''
+    ].map(val => `"${String(val).replace(/"/g, '""')}"`).join(','));
+
+    const csvContent = [headers.join(','), ...rows].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `HavenSec_Telemetry_${exId}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    alert('Failed to export CSV: ' + err.message);
+  }
+}
+
+// -------------------------------------------------------------
 // Initialization & Event Binding
 // -------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', async () => {
@@ -634,10 +739,46 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.print();
   });
 
+  // Report Export JSON
+  const btnExportJson = document.getElementById('btn-export-json');
+  if (btnExportJson) {
+    btnExportJson.addEventListener('click', exportExerciseJson);
+  }
+
+  // Report Export CSV
+  const btnExportCsv = document.getElementById('btn-export-csv');
+  if (btnExportCsv) {
+    btnExportCsv.addEventListener('click', exportTelemetryCsv);
+  }
+
+  // Orchestrator Mode Change
+  const btnSaveOrch = document.getElementById('btn-save-orch-mode');
+  if (btnSaveOrch) {
+    btnSaveOrch.addEventListener('click', async () => {
+      const mode = document.getElementById('select-orch-mode').value;
+      try {
+        const res = await fetch(`${API_BASE}/system/orchestrator/mode`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode })
+        });
+        if (res.ok) {
+          alert(`Orchestration mode updated to ${mode.toUpperCase()}`);
+          loadSystemHealth();
+        } else {
+          alert('Failed to update orchestration mode.');
+        }
+      } catch (err) {
+        alert('Error updating orchestration mode: ' + err.message);
+      }
+    });
+  }
+
   // Detect Backend and Load Initial State
   const online = await detectBackend();
   if (online) {
     await loadScenarios();
     await loadExercises();
+    await loadSystemHealth();
   }
 });

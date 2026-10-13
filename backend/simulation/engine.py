@@ -22,6 +22,7 @@ from simulation.scenarios import get_scenario, SYNTHETIC_ENVIRONMENT
 from simulation.agents import RedTeamAgent, BlueTeamSentinel, InvestigationAnalyst, ResponseCommander
 from simulation.referee import RefereeAgent
 from simulation.coach import CoachEngine
+from simulation.orchestration import OrchestrationManager
 
 active_simulation_tasks: Dict[str, asyncio.Task] = {}
 
@@ -152,6 +153,11 @@ async def run_simulation_loop(exercise_id: str, fast_mode: bool = False):
                     started_at=current_ex["startedAt"],
                     first_detection_ts=sentinel.first_detection_ts
                 )
+                
+                # Orchestrator score justification
+                orchestrator = OrchestrationManager.get_instance().get_orchestrator()
+                score_explanation = await orchestrator.explain_score(evaluation)
+                evaluation["orchestratorExplanation"] = score_explanation
                 save_evaluation(evaluation)
 
                 # Coach Generates Adaptive Next Steps

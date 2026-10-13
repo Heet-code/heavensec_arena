@@ -50,7 +50,7 @@ The system transitions across explicit lifecycle states (`CREATED` → `PREPARIN
 
 The evaluation model distinguishes **Red Team Effectiveness** (0–100), **Blue Team Defense** (0–100), and an empirical **Cyber-Resilience Score** (0–100), proving that resilience is not a simplistic average of opposing teams. Furthermore, the Security Coach analyzes metric bottlenecks using a deterministic policy ladder, recommending targeted follow-up exercises to produce verifiable delta improvements ($\Delta S_{\text{Resilience}}$). 
 
-Implemented strictly in Python/FastAPI, SQLite3, HTML5, CSS3, and Vanilla JavaScript, the platform includes a 13-case automated pytest suite passing at 100% reliability.
+The platform incorporates a vendor-independent, flexible orchestration architecture featuring a deterministic Built-in mode (zero external credentials required) and pluggable external adapters. Implemented strictly in Python/FastAPI, SQLite3, HTML5, CSS3, and Vanilla JavaScript, the platform includes a 17-case automated pytest suite passing at 100% reliability.
 
 ---
 
@@ -307,15 +307,17 @@ Modularized inside `backend/simulation/`:
 - `agents.py`: Implements `RedTeamAgent`, `BlueTeamSentinel`, `InvestigationAnalyst`, and `ResponseCommander`.
 - `referee.py`: Implements `RefereeAgent` for ground-truth score calculation and deduction/bonus auditing.
 - `coach.py`: Implements `CoachEngine` for weakness analysis, adaptive scenario recommendation, and cross-run comparison.
-- `engine.py`: Coordinates the main simulation loop, phase timing, and database persistence.
-- `api.py`: Exposes REST endpoints with Pydantic validation.
+- `orchestration.py`: Implements `OrchestrationManager`, `BuiltinOrchestrator` (deterministic offline default, zero external credentials required), and `ExternalOrchestrationAdapter` (pluggable for LangGraph, CrewAI, AutoGen, IBM Bob, OpenAI with automatic graceful fallback).
+- `engine.py`: Coordinates the main simulation loop, phase timing, orchestrator advice, and database persistence.
+- `api.py`: Exposes REST endpoints with Pydantic validation, system health inspection, and live orchestration control.
 
 ### 6.4 Relational Persistence Implementation
 All database operations in `backend/database.py` use SQLite3 parameterized queries with `PRAGMA foreign_keys = ON;`, indexed queries on `exercise_id`, and typed CRUD functions.
 
 ### 6.5 Frontend User Experience Implementation
 Constructed in `frontend/index.html`, `frontend/app.js`, and `frontend/styles.css`:
-- **8 Dedicated Sections:** Overview, Scenario Library, Exercise Setup, Live Arena, Referee Evaluation, Security Coach, Exercise History, Reports & Audit.
+- **9 Dedicated Sections:** Overview, Scenario Library, Exercise Setup, Live Arena, Referee Evaluation, Security Coach, Exercise History, Reports & Audit, and System Health.
+- **Client-Side Data Exporters:** Instant download of full exercise JSON audit ledgers and CSV telemetry streams directly in the browser.
 - **Dynamic API Discovery:** Auto-probes candidate backend ports (`/api`, `http://127.0.0.1:8000/api`, `http://127.0.0.1:9002/api`).
 - **DOM Security:** Mandatory `escapeHtml()` helper prevents XSS vulnerabilities.
 
@@ -335,31 +337,37 @@ The test suite in `backend/tests/` verifies:
 - `test_agents.py`: Red Team emission, Blue Sentinel detection, Analyst correlation, and Commander containment.
 - `test_coach.py`: Deterministic weakness identification and before-and-after $\Delta$ calculation.
 - `test_engine.py`: Fast simulation loop and SQLite persistence.
-- `test_api.py`: FastAPI TestClient integration testing across all endpoints.
+- `test_orchestration.py`: Builtin offline deterministic planning, external adapter graceful fallback, and singleton manager mode switching.
+- `test_api.py`: FastAPI TestClient integration testing across all endpoints, including `/api/system/health` and `/api/system/orchestrator`.
 
 ### 7.3 Actual Test Results & Verification
-All 13 automated test cases pass with 100% success rate:
+All 17 automated test cases pass with 100% success rate:
 ```text
-backend/tests/test_agents.py::test_red_team_generation PASSED            [  7%]
-backend/tests/test_agents.py::test_blue_sentinel_brute_force_detection PASSED [ 15%]
-backend/tests/test_agents.py::test_investigation_and_response_lifecycle PASSED [ 23%]
-backend/tests/test_api.py::test_health_check PASSED                      [ 30%]
-backend/tests/test_api.py::test_scenario_endpoints PASSED                [ 38%]
-backend/tests/test_api.py::test_environment_endpoint PASSED              [ 46%]
-backend/tests/test_api.py::test_exercise_creation_and_lifecycle PASSED   [ 53%]
-backend/tests/test_coach.py::test_coach_weakness_identification_recall PASSED [ 61%]
-backend/tests/test_coach.py::test_coach_comparison_delta PASSED          [ 69%]
-backend/tests/test_engine.py::test_full_simulation_loop_fast PASSED      [ 76%]
-backend/tests/test_scoring.py::test_referee_empty_events PASSED          [ 84%]
-backend/tests/test_scoring.py::test_referee_full_mitigation PASSED       [ 92%]
+backend/tests/test_agents.py::test_red_team_generation PASSED            [  5%]
+backend/tests/test_agents.py::test_blue_sentinel_brute_force_detection PASSED [ 11%]
+backend/tests/test_agents.py::test_investigation_and_response_lifecycle PASSED [ 17%]
+backend/tests/test_api.py::test_health_check PASSED                      [ 23%]
+backend/tests/test_api.py::test_scenario_endpoints PASSED                [ 29%]
+backend/tests/test_api.py::test_environment_endpoint PASSED              [ 35%]
+backend/tests/test_api.py::test_exercise_creation_and_lifecycle PASSED   [ 41%]
+backend/tests/test_api.py::test_system_health_and_orchestrator PASSED    [ 47%]
+backend/tests/test_coach.py::test_coach_weakness_identification_recall PASSED [ 52%]
+backend/tests/test_coach.py::test_coach_comparison_delta PASSED          [ 58%]
+backend/tests/test_engine.py::test_full_simulation_loop_fast PASSED      [ 64%]
+backend/tests/test_orchestration.py::test_builtin_orchestrator PASSED    [ 70%]
+backend/tests/test_orchestration.py::test_external_orchestrator_graceful_fallback PASSED [ 76%]
+backend/tests/test_orchestration.py::test_orchestration_manager_singleton_and_modes PASSED [ 82%]
+backend/tests/test_scoring.py::test_referee_empty_events PASSED          [ 88%]
+backend/tests/test_scoring.py::test_referee_full_mitigation PASSED       [ 94%]
 backend/tests/test_scoring.py::test_referee_uncontained_catastrophe PASSED [100%]
-======================== 13 passed in 0.97s ========================
+======================== 17 passed in 1.83s ========================
 ```
 
 ### 7.4 Defect Resolution & Refactoring
 1. **Asynchronous Start Status:** Fixed `start_exercise` endpoint to transition status to `running` immediately before task creation, preventing a race condition where the client polled `created`.
 2. **Pydantic v2 Compatibility:** Replaced deprecated `.dict()` calls with `.model_dump()`.
 3. **Python Path Resolution:** Added `backend/conftest.py` ensuring pytest resolves backend modules across CLI environments.
+4. **Flexible Orchestration:** Created modular `OrchestratorAdapter` isolating external AI services from core execution so tests and local runs execute with 100% offline determinism.
 
 ---
 

@@ -1,0 +1,348 @@
+=== Page 1 ===
+HavenSec Arena
+TAPI DIPLOMA ENGINEERING COLLEGE
+PAGE | 1
+ CHAPTER 1: INTRODUCTION AND PROBLEM
+ IDENTIFICATION
+1.1 Introduction
+Cybersecurity has become an essential part of modern information technology because organizations depend
+on connected systems, applications, networks and digital services. As threats become more complex,
+organizations need practical ways to test defensive controls, understand attack behaviour and improve incident
+response. Cyber ranges provide controlled environments in which security scenarios can be exercised without
+directly exposing production infrastructure.
+Artificial intelligence and multi-agent systems can support security analysis, orchestration and decision
+support. HavenSec Arena applies these ideas to a controlled cyber-resilience simulation and proposes an
+AI-assisted multi-agent Red Team versus Blue Team platform.
+1.2 Background of the Project
+Cyber ranges are interactive simulated environments that replicate networks, systems, tools and applications
+for cybersecurity education, training and security testing. NIST's The Cyber Range: A Guide describes cyber
+ranges as safe and legal environments for hands-on cyber skills and explains simulation and emulation
+approaches.
+Existing technologies already provide important parts of this area. MITRE CALDERA automates adversary
+emulation using ATT&CK; Atomic Red Team provides focused ATT&CK-mapped; tests; Cyberbit provides
+cyber-range exercises and readiness measurement; and Immersive Labs provides collaborative cyber-range
+exercises.
+1.3 Problem Identification
+The identified problem is the lack of a single controlled workflow that combines simulated offensive activity,
+defensive monitoring and response, objective scoring and post-exercise improvement feedback while keeping
+all activity inside an isolated environment.
+  What is the problem? Cyber-resilience exercises can be difficult to run repeatedly and objectively measure.
+  Who faces this problem? Organizations and security teams that need repeatable readiness testing.
+  Where does it occur? During security exercises, incident-response drills and defensive readiness assessments.
+  Why does it occur? Production systems cannot safely be used as unrestricted attack-training environments,
+ while manual exercises require significant coordination.
+ What are the consequences? Limited practice, inconsistent telemetry, difficult comparison of results and
+ weak visibility into improvement areas.
+1.4 Problem Statement
+“To design and develop a safe, isolated and AI-assisted cyber-resilience simulation platform for controlled
+Red Team and Blue Team exercises in order to overcome the safety, repeatability and objective-scoring
+limitations of practicing on real systems.”
+
+
+=== Page 2 ===
+HavenSec Arena
+TAPI DIPLOMA ENGINEERING COLLEGE
+PAGE | 2
+1.5 Need for the Proposed Solution
+HavenSec Arena is required to provide a controlled environment in which security scenarios can be repeated,
+observed and measured without depending on live production targets. The NIST cyber-range guidance
+highlights realism, legality, flexibility, accessibility and scalability as important considerations.
+  Existing limitations: Real production infrastructure is unsuitable for unrestricted attack simulation.
+  User difficulties: Teams need repeatable scenarios, clear event timelines and measurable outcomes.
+  Cost: Dedicated physical training infrastructure can be expensive; software isolation can reduce infrastructure
+ requirements for a prototype.
+ Efficiency: Automated orchestration can coordinate simulation, telemetry, detection, response and scoring.
+  Accuracy: Defined metrics can make results more consistent across repeated exercises.
+  Accessibility: A software prototype can make controlled exercises easier to reproduce.
+  Industrial requirement: Organizations need to validate readiness without risking production systems.
+ 1.6 Objectives
+  1. To study existing cyber-range, adversary-emulation and defensive-training systems.
+  2. To identify limitations of existing solutions for combined simulation, defense and scoring.
+  3. To design an isolated cyber-range concept using dummy data and simulated events.
+  4. To design a multi-agent workflow containing Red Team, Blue Team and Referee roles.
+  5. To generate an incident timeline and a composite cyber-resilience score.
+  6. To evaluate the proposed workflow and identify future improvements.
+ 1.7 Scope of the Project
+Included in the project
+  A controlled sandbox/cyber-range concept using dummy or synthetic data.
+  Red Team simulation, Blue Team monitoring/response and Referee scoring.
+  AI-assisted agent coordination and an incident timeline/reporting workflow.
+ Not included in the project
+  Attacking or testing real production systems, public targets or unauthorized infrastructure.
+  Use of real credentials, confidential organizational data or uncontrolled external network access.
+  Unrestricted autonomous offensive activity outside the sandbox.
+ 
+
+=== Page 3 ===
+HavenSec Arena
+TAPI DIPLOMA ENGINEERING COLLEGE
+PAGE | 3
+1.8 Limitations
+  The prototype is limited to controlled simulated scenarios and does not represent the full complexity of a
+ production Security Operations Center.
+ The sandbox uses synthetic/dummy data rather than live organizational telemetry.
+  The quality of the resilience score depends on the event data and metrics available to the Referee component.
+  The number and realism of scenarios are limited by project time, hardware and development resources.
+  Integration with enterprise SIEM, EDR or other operational tools is outside the initial prototype scope.
+  AI-generated decisions require validation and should not be treated as autonomous authorization for real-world
+ offensive activity.
+Important technology clarification
+The project presentation identifies IBM Bob as the proposed reasoning core. Current IBM documentation
+describes IBM Bob as an AI-powered software-development/SDLC partner with agent and subagent
+capabilities, not as a dedicated cyber-range reasoning engine. Therefore, this report treats IBM Bob as a
+proposed AI component or integration option rather than as an already-existing cybersecurity engine.
+This distinction keeps the project technically defensible: HavenSec Arena is the proposed system, while IBM
+Bob is an external AI technology that may be evaluated or integrated for selected orchestration or reasoning
+tasks.
+
+
+=== Page 4 ===
+HavenSec Arena
+TAPI DIPLOMA ENGINEERING COLLEGE
+PAGE | 4
+ CHAPTER 2: LITERATURE SURVEY AND EXISTING
+ SYSTEMS
+2.1 Introduction
+The study covers cyber-range architecture, adversary emulation, ATT&CK-based; testing, team-based cyber
+exercises and automated security testing. Official documentation and industry sources were reviewed to
+identify existing systems, their capabilities and the implementation gap addressed by HavenSec Arena.
+2.2 Literature Survey
+ Sr.
+No.
+ Author / Source
+ Year
+ Title / Source
+ Technology / Method
+ Major Finding
+ Limitation
+ 1
+NIST
+ 2023
+The Cyber Range: A Guide
+Cyber-range simulation,
+emulation and virtual
+environments
+Cyber ranges provide safe, legal and
+interactive environments for training
+and security testing.
+Realism, scalability and
+infrastructure choices vary by
+implementation.
+ 2
+MITRE
+ 2025
+CALDERA
+ATT&CK-based; automated
+adversary emulation
+Automates adversary behaviour and
+security assessment using
+ATT&CK; models and decision
+logic.
+Primarily adversary emulation
+rather than a complete
+Red/Blue/Referee learning loop.
+ 3
+Atomic Red Team
+ n.d.
+Atomic Red Team
+Documentation
+ATT&CK-mapped; atomic tests
+and execution frameworks
+Provides focused tests that teams
+can execute to evaluate detection
+coverage.
+Testing library/framework rather
+than a complete cyber-range with
+integrated team scoring.
+ 4
+Cyberbit
+ n.d.
+Cyberbit Cyber Range
+Virtual enterprise networks,
+SOC tools, attack scenarios and
+team exercises
+Provides realistic cyber exercises,
+Red/Blue team training and
+performance measurement.
+Commercial platform with
+vendor-controlled architecture.
+ 5
+Immersive Labs
+ 2025
+Cyber Range Exercises
+Multiplayer simulated incidents
+and team exercises
+Supports realistic team simulations,
+performance measurement and
+skill-gap identification.
+Training platform rather than the
+proposed AI-agent architecture.
+2.3 Existing System 1 – MITRE CALDERA
+Working: CALDERA is an automated adversary-emulation system that uses MITRE ATT&CK; to model and
+reproduce adversary behaviour. MITRE describes an architecture involving adversary representation,
+ATT&CK; profiles, a decision engine and an agent.
+Technology: MITRE ATT&CK;, adversary profiles, decision logic and agents. Advantages: automation,
+repeatability and ATT&CK-aligned; security assessment. Limitations: it is primarily an adversary-emulation
+platform and does not provide the exact HavenSec combination of sandboxed Red Team, Blue Team, Referee
+scoring and improvement reporting.
+
+
+=== Page 5 ===
+HavenSec Arena
+TAPI DIPLOMA ENGINEERING COLLEGE
+PAGE | 5
+2.4 Existing System 2 – Cyberbit Cyber Range
+Working: Cyberbit provides cloud-based and virtual cyber-range exercises with realistic enterprise networks,
+attack scenarios and defensive tools. Its platform supports team exercises, Red Team/Blue Team activities and
+performance measurement.
+Technology: virtualized enterprise networks, SOC tools, attack scenarios, telemetry and performance metrics.
+Advantages: realistic environments, scenario-based exercises, team readiness measurement and scalable range
+provisioning. Limitations: it is a commercial platform with vendor-defined architecture and is not specifically
+the proposed multi-agent AI sandbox.
+2.5 Existing System 3 – Immersive Cyber Range Exercises
+Working: Immersive Cyber Range Exercises are multiplayer exercises in which teams collaborate in realistic
+simulations of cybersecurity incidents and are measured on performance.
+Technology: simulated incident environments, team exercises, scenario catalogues and performance reporting.
+Advantages: collaborative practice, incident investigation, response skills and identification of
+knowledge/skill gaps. Limitations: it is a training/exercise platform rather than the specific AI-coordinated
+Red Team–Blue Team–Referee architecture proposed by HavenSec Arena.
+2.6 Limitations of Existing Systems
+ Existing System
+ Major Advantage
+ Major Limitation
+MITRE CALDERA
+Automated ATT&CK-based; adversary emulation.
+Does not itself provide the full proposed defensive-response and
+Referee scoring loop.
+Cyberbit Cyber Range
+Realistic team exercises, Red/Blue training and performance
+measurement.
+Commercial/vendor-controlled platform; not the proposed custom
+multi-agent architecture.
+Immersive Cyber Range Exercises
+Collaborative simulated incidents with performance
+measurement.
+Training platform rather than the proposed AI-agent orchestration
+and scoring architecture.
+2.7 Research/Implementation Gap
+The reviewed systems show that important parts of HavenSec Arena already exist separately: CALDERA
+provides automated adversary emulation; Atomic Red Team provides focused ATT&CK-mapped; tests;
+Cyberbit and Immersive provide cyber-range/team exercises and measurement.
+The implementation gap is therefore not the claim that no similar technology exists. Instead, HavenSec Arena
+aims to combine selected ideas into one academic prototype workflow: an isolated sandbox, controlled Red
+Team simulation, Blue Team detection/response, an AI-assisted coordination layer, Referee scoring and an
+improvement-oriented report.
+2.8 Proposed Solution – Overview
+HavenSec Arena is proposed as a Docker-isolated cyber-resilience simulation environment using dummy data
+and controlled events. Red Team components simulate reconnaissance, path planning and objectives; Blue
+Team components monitor, detect, respond and recover; and a Referee component calculates metrics such as
+detection time, containment, damage and recovery. The AI component is intended to assist orchestration and
+reasoning. This is a proposed architecture, not a claim that an identical commercial system already exists.
+
+
+=== Page 6 ===
+HavenSec Arena
+TAPI DIPLOMA ENGINEERING COLLEGE
+PAGE | 6
+ CHAPTER 3: ALTERNATIVE SOLUTIONS AND SOLUTION
+ SELECTION
+3.1 Introduction
+Three practical approaches were considered: adopting an existing cyber-range platform, building a
+deterministic rule-based sandbox, and developing the proposed AI-assisted multi-agent HavenSec Arena.
+3.2 Requirements of the Proposed System
+❖ Functional Requirements
+  Scenario selection and controlled scenario execution.
+  Red Team simulation of predefined attack behaviours inside the sandbox.
+  Generation and collection of synthetic telemetry/events.
+  Blue Team monitoring, detection, response and recovery workflow.
+  Referee-based measurement of detection time, containment, damage and recovery.
+  Incident timeline, resilience score and improvement report generation.
+ ❖ Non-functional Requirements
+  Performance
+  Security and isolation
+  Reliability
+  Usability
+  Scalability
+  Maintainability
+ 3.3 Alternative Solution 1 – Use an Existing Cyber-Range Platform
+Use a mature platform such as Cyberbit Cyber Range or Immersive Cyber Range Exercises. This provides
+established scenarios, realistic environments and exercise measurement. The major disadvantage is reduced
+control over the internal architecture and dependency on a third-party platform.
+3.4 Alternative Solution 2 – Custom Rule-Based Cyber Sandbox
+Develop a local sandbox in which predefined rules control scenario execution, event generation, detection and
+scoring. This approach offers strong control and is straightforward for a prototype, but it provides less adaptive
+reasoning and requires more custom logic for every scenario.
+3.5 Alternative Solution 3 – AI-Assisted Multi-Agent HavenSec Arena
+Develop a controlled sandbox with specialized Red Team, Blue Team and Referee components coordinated by
+an AI reasoning layer. The system is designed to combine simulation, defense, scoring and reporting while
+keeping all actions inside an isolated environment.
+3.6 Comparison of Alternative Solutions
+
+
+=== Page 7 ===
+HavenSec Arena
+TAPI DIPLOMA ENGINEERING COLLEGE
+PAGE | 7
+ Criteria
+ Solution 1
+ Solution 2
+ Solution 3
+ Proposed Solution
+Cost
+ Medium / High
+ Low / Medium
+ Medium
+ Medium
+Accuracy
+ High for supported scenarios
+ Depends on rules
+ High potential; needs validation
+ High potential; controlled scoring
+Ease of implementation
+ Medium
+ High
+ Medium
+ Medium
+Hardware requirement
+ Medium / High
+ Low / Medium
+ Medium
+ Medium
+Scalability
+ High
+ Medium
+ High potential
+ High potential
+Security
+ High if properly isolated
+ High if properly isolated
+ High with sandbox controls
+ High with strict isolation
+Maintenance
+ Platform dependent
+ High custom maintenance
+ Medium / High
+ Medium / High
+3.7 Selected Solution
+The selected solution is Solution 3 – AI-Assisted Multi-Agent HavenSec Arena, implemented as a safe,
+isolated cyber-resilience simulation environment.
+3.8 Justification for Selection
+  Technical feasibility: The system can be divided into sandbox, Red Team, Blue Team, Referee and
+ dashboard/orchestration components.
+ Cost: A prototype can use software isolation and synthetic data rather than production infrastructure.
+  Resources: The project can use commonly available development technologies and containerization.
+  Time: The first prototype can focus on a limited number of controlled scenarios.
+  Accuracy: Defined metrics provide a consistent basis for comparing scenario results.
+  Availability: Simulated scenarios can be reproduced without waiting for real incidents.
+  Safety: The architecture explicitly confines activity to a sandbox with dummy data and no live targets.
+  Scalability: Future versions can add scenarios, adaptive difficulty, more agents, SIEM/EDR integrations and
+ richer reporting.
+3.9 Alternative Approach
+If the AI-assisted multi-agent approach does not perform as expected, the fallback will be a deterministic
+rule-based orchestration layer for scenario execution, event generation and scoring. AI can then be introduced
+incrementally for selected reasoning tasks after validation.
+Conclusion of selection: HavenSec Arena is not claimed to be the first cyber-range or multi-agent
+cybersecurity system. Its proposed contribution is the integration of controlled simulation, defensive response,
+objective scoring and AI-assisted orchestration into a single academic prototype.
+
+

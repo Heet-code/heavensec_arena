@@ -3,3 +3,4 @@ from simulation.agents import RedTeamAgent, BlueTeamSentinel, InvestigationAnaly
 from simulation.referee import RefereeAgent
 from simulation.coach import CoachEngine
 from simulation.engine import start_simulation, cancel_simulation, run_simulation_loop
+from simulation.orchestration import OrchestrationMode, OrchestrationManager, BuiltinOrchestrator, ExternalOrchestrationAdapter

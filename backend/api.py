@@ -11,6 +11,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from database import (
+    get_db,
     get_exercise, save_exercise, list_exercises,
     get_telemetry_by_exercise, get_alerts_by_exercise,
     get_incidents_by_exercise, get_responses_by_exercise,
@@ -20,6 +21,7 @@ from models import ExerciseConfig, ExerciseDetail
 from simulation.scenarios import SCENARIOS, SYNTHETIC_ENVIRONMENT, get_scenario, list_all_scenarios
 from simulation.engine import start_simulation, cancel_simulation
 from simulation.coach import CoachEngine
+from simulation.orchestration import OrchestrationManager, OrchestrationMode
 
 app = FastAPI(
     title="HavenSec Arena API",
@@ -44,6 +46,61 @@ def health():
         "engine": "Python/FastAPI",
         "runtime": "Safe Deterministic Cyber-Range"
     }
+
+@app.get("/api/system/health")
+def system_health():
+    manager = OrchestrationManager.get_instance()
+    health_data = manager.get_system_health()
+    
+    db_connected = False
+    table_count = 0
+    tables = []
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';")
+        rows = cursor.fetchall()
+        tables = [r[0] for r in rows]
+        table_count = len(tables)
+        db_connected = True
+        conn.close()
+    except Exception as e:
+        db_connected = False
+
+    return {
+        "status": "operational",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "database": {
+            "connected": db_connected,
+            "engine": "SQLite",
+            "tableCount": table_count,
+            "tables": tables
+        },
+        "orchestration": health_data,
+        "academicContext": {
+            "student": "Heet Kalthiya",
+            "institution": "Tapi Diploma Engineering College",
+            "department": "Information Technology",
+            "level": "Semester 5 — Minor Project",
+            "projectTitle": "HavenSec Arena"
+        }
+    }
+
+@app.get("/api/system/orchestrator")
+def get_orchestrator_status():
+    manager = OrchestrationManager.get_instance()
+    return manager.get_system_health()
+
+@app.post("/api/system/orchestrator/mode")
+def set_orchestrator_mode(payload: Dict[str, str]):
+    mode_str = payload.get("mode", "builtin").lower()
+    try:
+        mode = OrchestrationMode(mode_str)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid mode. Choose from {[m.value for m in OrchestrationMode]}")
+    manager = OrchestrationManager.get_instance()
+    manager.set_mode(mode)
+    return {"status": "updated", "newMode": mode.value}
 
 # -------------------------------------------------------------
 # Scenarios & Synthetic Environment

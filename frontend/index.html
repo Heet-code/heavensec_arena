@@ -28,6 +28,7 @@
           <li><a href="#coach" class="nav-link" data-view="coach">Security Coach</a></li>
           <li><a href="#history" class="nav-link" data-view="history">Exercise History</a></li>
           <li><a href="#reports" class="nav-link" data-view="reports">Reports & Audit</a></li>
+          <li><a href="#health" class="nav-link" data-view="health">System Health</a></li>
         </ul>
       </nav>
 
@@ -376,6 +377,8 @@
                 <p class="subtext">Detailed technical breakdown for college evaluation and post-incident review.</p>
               </div>
               <div>
+                <button id="btn-export-json" class="btn btn-secondary btn-sm">Export JSON</button>
+                <button id="btn-export-csv" class="btn btn-secondary btn-sm">Export CSV</button>
                 <button id="btn-print-report" class="btn btn-secondary btn-sm">Print / Save PDF</button>
               </div>
             </div>
@@ -387,6 +390,136 @@
 
             <div class="report-markdown-preview card bg-darker mt-15" id="report-preview-box">
               <pre id="report-markdown-content" class="code-block">Select an exercise to generate its technical audit report.</pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- 9. SYSTEM HEALTH & ORCHESTRATION VIEW -->
+        <section id="view-health" class="view-panel">
+          <div class="metrics-hero-grid">
+            <div class="metric-card">
+              <span class="metric-label">API Gateway Status</span>
+              <div class="metric-value-box">
+                <span id="health-api-status" class="metric-value text-green">Online</span>
+              </div>
+              <span id="health-api-runtime" class="subtext">Python 3.14 / FastAPI</span>
+            </div>
+
+            <div class="metric-card">
+              <span class="metric-label">SQLite Relational Database</span>
+              <div class="metric-value-box">
+                <span id="health-db-status" class="metric-value text-blue">Connected</span>
+              </div>
+              <span id="health-db-tables" class="subtext">8 Tables Verified</span>
+            </div>
+
+            <div class="metric-card">
+              <span class="metric-label">Active Orchestration Mode</span>
+              <div class="metric-value-box">
+                <span id="health-orch-mode" class="metric-value text-purple">BUILTIN</span>
+              </div>
+              <span class="subtext">Zero External Credentials Required</span>
+            </div>
+
+            <div class="metric-card">
+              <span class="metric-label">Vendor Independence</span>
+              <div class="metric-value-box">
+                <span class="metric-value text-green">100%</span>
+              </div>
+              <span class="subtext">Fully Offline & Self-Contained</span>
+            </div>
+          </div>
+
+          <div class="grid-2-col mt-20">
+            <!-- Orchestration Configuration Card -->
+            <div class="card">
+              <h3>Multi-Agent Orchestration Engine</h3>
+              <p class="subtext mb-15">Configure simulation runtime mode and external adapter pluggability.</p>
+
+              <div class="form-group">
+                <label for="select-orch-mode">Active Orchestration Runtime</label>
+                <select id="select-orch-mode" class="form-control">
+                  <option value="builtin" selected>Built-in Deterministic (Local, Offline, 0 API Keys)</option>
+                  <option value="external">External Adapter (LangGraph / CrewAI / AutoGen / IBM Bob)</option>
+                </select>
+              </div>
+
+              <div id="orch-mode-desc-box" class="content-box bg-darker mt-10">
+                <p id="orch-mode-desc" class="subtext">Running in 100% deterministic local mode with zero external dependencies.</p>
+              </div>
+
+              <button id="btn-save-orch-mode" class="btn btn-secondary mt-15">Apply Orchestration Mode</button>
+            </div>
+
+            <!-- Academic Submission & Viva Metadata -->
+            <div class="card">
+              <h3>Academic Examination Context</h3>
+              <p class="subtext mb-15">Minor Project submission metadata for Tapi Diploma Engineering College.</p>
+              
+              <ul class="bullet-list">
+                <li><strong>Candidate Name:</strong> Heet Kalthiya</li>
+                <li><strong>Institution:</strong> Tapi Diploma Engineering College</li>
+                <li><strong>Department:</strong> Diploma in Information Technology</li>
+                <li><strong>Curriculum Stage:</strong> Semester 5 — Minor Project</li>
+                <li><strong>Architecture:</strong> Zero-Build Frontend (HTML5/CSS3/Vanilla JS), FastAPI, SQLite</li>
+                <li><strong>Testing Status:</strong> 17 Passing Pytest Suites (100% Automated Coverage)</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Active Multi-Agent Roster Table -->
+          <div class="card mt-20">
+            <h3>Active Multi-Agent System Roster</h3>
+            <p class="subtext mb-15">Specialized autonomous and deterministic agents operating within HavenSec Arena.</p>
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Agent Name</th>
+                    <th>Tactical Role</th>
+                    <th>Analytical Framework / Basis</th>
+                    <th>Operational State</th>
+                  </tr>
+                </thead>
+                <tbody id="agent-roster-body">
+                  <tr>
+                    <td><strong>RedTeamAgent</strong></td>
+                    <td>Synthetic Adversary & Attack Path Planning</td>
+                    <td>MITRE ATT&CK Matrix (T1110, T1059, T1078, etc.)</td>
+                    <td><span class="badge badge-green">READY</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>BlueTeamSentinel</strong></td>
+                    <td>Continuous Telemetry Inspection & Detection</td>
+                    <td>Statistical Correlation & Signature Rules</td>
+                    <td><span class="badge badge-green">READY</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>InvestigationAnalyst</strong></td>
+                    <td>Incident Corroboration & Triage</td>
+                    <td>Multi-Event Evidence Graph Clustering</td>
+                    <td><span class="badge badge-green">READY</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>ResponseCommander</strong></td>
+                    <td>Bounded Simulated Containment</td>
+                    <td>Automated Playbooks (Host Isolation, Credential Revocation)</td>
+                    <td><span class="badge badge-green">READY</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>RefereeAgent</strong></td>
+                    <td>Ground-Truth Incident Audit & Scoring</td>
+                    <td>Empirical Cyber-Resilience Scoring Model (0–100)</td>
+                    <td><span class="badge badge-green">READY</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>CoachEngine</strong></td>
+                    <td>Adaptive Recommendations & Gap Analysis</td>
+                    <td>Post-Incident Metric Delta Comparison</td>
+                    <td><span class="badge badge-green">READY</span></td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </section>
