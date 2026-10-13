@@ -339,8 +339,8 @@ def save_incident(incident: Dict[str, Any], db_path: Optional[str] = None):
             response_actions_json=excluded.response_actions_json;
     """, (
         incident["id"], incident["exerciseId"], incident["title"], incident["description"],
-        incident["severity"], incident["status"], incident["sourceAsset"],
-        incident["detectedAt"], incident.get("resolvedAt"), incident["assignedAgent"],
+        incident["severity"], incident["status"], incident.get("sourceAsset", incident.get("affectedAsset", "UNKNOWN")),
+        incident["detectedAt"], incident.get("resolvedAt"), incident.get("assignedAgent", "Blue Sentinel"),
         json.dumps(incident.get("evidence", [])), json.dumps(incident.get("affectedAssets", [])),
         json.dumps(incident.get("responseActions", []))
     ))

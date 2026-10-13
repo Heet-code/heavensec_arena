@@ -404,11 +404,49 @@ def execute_manual_response(exercise_id: str, incident_id: str, playbook_name: s
 
     now_iso = datetime.now(timezone.utc).isoformat()
     action_id = f"resp-{uuid.uuid4().hex[:8]}"
-    
+
+    # Ensure target incident exists to satisfy SQLite foreign key constraint
+    incidents = get_incidents_by_exercise(exercise_id)
+    target_inc = None
+    if incident_id:
+        target_inc = next((i for i in incidents if i["id"] == incident_id), None)
+    if not target_inc and incidents:
+        target_inc = next((i for i in incidents if i.get("affectedAsset") == target_asset), incidents[-1])
+
+    if not target_inc:
+        effective_inc_id = incident_id if incident_id else f"inc-{uuid.uuid4().hex[:8]}"
+        target_inc = {
+            "id": effective_inc_id,
+            "exerciseId": exercise_id,
+            "title": f"Containment Triggered on {target_asset}",
+            "description": f"Operator dispatched manual response playbook '{playbook_name}'.",
+            "severity": "high",
+            "status": "contained",
+            "sourceAsset": target_asset,
+            "affectedAsset": target_asset,
+            "assignedAgent": "SOC Operator",
+            "detectedAt": now_iso,
+            "resolvedAt": now_iso,
+            "indicators": [target_asset],
+            "mitreTactics": ["Containment"],
+            "responseActions": [action_id]
+        }
+        save_incident(target_inc)
+    else:
+        target_inc["status"] = "contained"
+        target_inc["resolvedAt"] = now_iso
+        act_list = target_inc.get("responseActions", [])
+        if not isinstance(act_list, list):
+            act_list = []
+        if action_id not in act_list:
+            act_list.append(action_id)
+        target_inc["responseActions"] = act_list
+        save_incident(target_inc)
+
     response_act = {
         "id": action_id,
         "exerciseId": exercise_id,
-        "incidentId": incident_id,
+        "incidentId": target_inc["id"],
         "playbookName": playbook_name,
         "targetAsset": target_asset,
         "actionType": "containment",
@@ -419,24 +457,7 @@ def execute_manual_response(exercise_id: str, incident_id: str, playbook_name: s
     }
     save_response_action(response_act)
 
-    # Mark the target incident as contained
-    incidents = get_incidents_by_exercise(exercise_id)
-    updated_inc = None
-    for inc in incidents:
-        if inc["id"] == incident_id:
-            inc["status"] = "contained"
-            inc["resolvedAt"] = now_iso
-            act_list = inc.get("responseActions", [])
-            if not isinstance(act_list, list):
-                act_list = []
-            if action_id not in act_list:
-                act_list.append(action_id)
-            inc["responseActions"] = act_list
-            save_incident(inc)
-            updated_inc = inc
-            break
-
-    return {"responseAction": response_act, "incident": updated_inc}
+    return {"status": "ok", "responseAction": response_act, "action": response_act, "incident": target_inc}
 
 def cancel_simulation(exercise_id: str):
     """
