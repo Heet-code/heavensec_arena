@@ -94,3 +94,70 @@ def test_system_health_and_orchestrator():
     reset_res = client.post("/api/system/orchestrator/mode", json={"mode": "builtin"})
     assert reset_res.status_code == 200
     assert reset_res.json()["newMode"] == "builtin"
+
+def test_manual_mode_endpoints():
+    # 1. Create exercise with manual mode
+    create_res = client.post("/api/exercises", json={
+        "scenarioId": "scenario-suspicious-auth",
+        "difficulty": "intermediate",
+        "targetAsset": "AUTH-01",
+        "seed": 42,
+        "mode": "manual",
+        "simulationDuration": 15
+    })
+    assert create_res.status_code == 200
+    ex = create_res.json()
+    ex_id = ex["id"]
+    assert ex["mode"] == "manual"
+
+    # 2. Start
+    start_res = client.post(f"/api/exercises/{ex_id}/start")
+    assert start_res.status_code == 200
+    assert start_res.json()["status"] == "running"
+
+    # 3. Step through phases
+    s1 = client.post(f"/api/exercises/{ex_id}/step")
+    assert s1.status_code == 200
+    assert s1.json()["phase"] == "running"
+
+    s2 = client.post(f"/api/exercises/{ex_id}/step")
+    assert s2.status_code == 200
+    assert s2.json()["phase"] == "detecting"
+
+    s3 = client.post(f"/api/exercises/{ex_id}/step")
+    assert s3.status_code == 200
+    assert s3.json()["phase"] == "investigating"
+
+    # 4. Check incidents and execute manual response
+    inc_res = client.get(f"/api/exercises/{ex_id}/incidents")
+    assert inc_res.status_code == 200
+    incidents = inc_res.json()
+    assert len(incidents) > 0
+    inc_id = incidents[0]["id"]
+
+    resp_res = client.post(f"/api/exercises/{ex_id}/respond", json={
+        "incidentId": inc_id,
+        "playbookName": "host-isolation",
+        "targetAsset": "AUTH-01",
+        "rationale": "Manual quarantine applied by SOC operator."
+    })
+    assert resp_res.status_code == 200
+    assert resp_res.json()["responseAction"]["status"] == "executed"
+    assert resp_res.json()["incident"]["status"] == "contained"
+
+    # 5. Complete steps
+    s4 = client.post(f"/api/exercises/{ex_id}/step")
+    assert s4.status_code == 200
+    assert s4.json()["phase"] == "responding"
+
+    s5 = client.post(f"/api/exercises/{ex_id}/step")
+    assert s5.status_code == 200
+    assert s5.json()["phase"] == "evaluating"
+
+    eval_res = client.get(f"/api/exercises/{ex_id}/evaluation")
+    assert eval_res.status_code == 200
+    assert eval_res.json()["resilienceScore"] > 0
+
+    s6 = client.post(f"/api/exercises/{ex_id}/step")
+    assert s6.status_code == 200
+    assert s6.json()["phase"] == "completed"

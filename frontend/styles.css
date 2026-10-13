@@ -563,3 +563,9 @@ body {
   word-break: break-all;
   color: var(--text-muted);
 }
+
+.tactical-bar-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

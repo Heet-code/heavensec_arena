@@ -2,5 +2,5 @@ from simulation.scenarios import SCENARIOS, SYNTHETIC_ENVIRONMENT, get_scenario,
 from simulation.agents import RedTeamAgent, BlueTeamSentinel, InvestigationAnalyst, ResponseCommander
 from simulation.referee import RefereeAgent
 from simulation.coach import CoachEngine
-from simulation.engine import start_simulation, cancel_simulation, run_simulation_loop
+from simulation.engine import start_simulation, cancel_simulation, run_simulation_loop, step_manual_simulation, execute_manual_response
 from simulation.orchestration import OrchestrationMode, OrchestrationManager, BuiltinOrchestrator, ExternalOrchestrationAdapter

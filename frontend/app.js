@@ -289,7 +289,7 @@ async function loadOverviewMetrics(exId) {
 // -------------------------------------------------------------
 // Live Arena Simulation Polling
 // -------------------------------------------------------------
-async function startSimulation(exId) {
+async function startSimulation(exId, mode = 'automatic') {
   activeExerciseId = exId;
   displayedTelemetryIds.clear();
 
@@ -297,6 +297,26 @@ async function startSimulation(exId) {
   document.getElementById('arena-phase-badge').className = 'badge badge-running';
   document.getElementById('arena-phase-badge').textContent = 'PREPARING';
   document.getElementById('btn-cancel-sim').classList.remove('hidden');
+
+  const modeBadge = document.getElementById('arena-mode-badge');
+  const btnManualStep = document.getElementById('btn-manual-step');
+  const manualBar = document.getElementById('manual-tactical-bar');
+
+  if (mode === 'manual') {
+    if (modeBadge) {
+      modeBadge.textContent = 'MANUAL';
+      modeBadge.className = 'badge badge-amber';
+    }
+    if (btnManualStep) btnManualStep.classList.remove('hidden');
+    if (manualBar) manualBar.classList.remove('hidden');
+  } else {
+    if (modeBadge) {
+      modeBadge.textContent = 'AUTOMATIC';
+      modeBadge.className = 'badge badge-green';
+    }
+    if (btnManualStep) btnManualStep.classList.add('hidden');
+    if (manualBar) manualBar.classList.add('hidden');
+  }
 
   // Clear live stream UI
   document.getElementById('telemetry-stream-body').innerHTML = '';
@@ -331,10 +351,29 @@ async function pollLiveArenaState() {
     const alerts = await altRes.json();
     const responses = await respRes.json();
 
-    // Update phase badge
+    // Update phase badge and mode
     const badge = document.getElementById('arena-phase-badge');
     badge.textContent = ex.currentPhase.toUpperCase();
     document.getElementById('arena-scenario-name').textContent = ex.scenarioName;
+
+    const modeBadge = document.getElementById('arena-mode-badge');
+    const btnManualStep = document.getElementById('btn-manual-step');
+    const manualBar = document.getElementById('manual-tactical-bar');
+    if (ex.mode === 'manual') {
+      if (modeBadge) {
+        modeBadge.textContent = 'MANUAL';
+        modeBadge.className = 'badge badge-amber';
+      }
+      if (btnManualStep) btnManualStep.classList.remove('hidden');
+      if (manualBar) manualBar.classList.remove('hidden');
+    } else {
+      if (modeBadge) {
+        modeBadge.textContent = 'AUTOMATIC';
+        modeBadge.className = 'badge badge-green';
+      }
+      if (btnManualStep) btnManualStep.classList.add('hidden');
+      if (manualBar) manualBar.classList.add('hidden');
+    }
 
     // Process new telemetry
     const tbody = document.getElementById('telemetry-stream-body');
@@ -689,6 +728,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     e.preventDefault();
     const scenarioId = document.getElementById('select-scenario').value;
     const difficulty = document.getElementById('select-difficulty').value;
+    const mode = document.getElementById('select-mode') ? document.getElementById('select-mode').value : 'automatic';
     const seed = parseInt(document.getElementById('input-seed').value, 10) || 42;
     const targetAsset = document.getElementById('input-target-asset').value;
     const previousExerciseId = document.getElementById('input-linked-prev').value.trim() || null;
@@ -700,6 +740,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         body: JSON.stringify({
           scenarioId,
           difficulty,
+          mode,
           seed,
           targetAsset,
           previousExerciseId,
@@ -709,7 +750,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (res.ok) {
         const ex = await res.json();
-        await startSimulation(ex.id);
+        await startSimulation(ex.id, mode);
       } else {
         alert('Failed to initialize exercise. Inspect console.');
       }
@@ -717,6 +758,64 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error(err);
       alert('Network error connecting to HavenSec Arena API.');
     }
+  });
+
+  // Manual Mode Step Button
+  const btnManualStep = document.getElementById('btn-manual-step');
+  if (btnManualStep) {
+    btnManualStep.addEventListener('click', async () => {
+      if (!activeExerciseId) return;
+      btnManualStep.disabled = true;
+      btnManualStep.textContent = 'Stepping...';
+      try {
+        const res = await fetch(`${API_BASE}/exercises/${activeExerciseId}/step`, { method: 'POST' });
+        if (res.ok) {
+          await pollLiveArenaState();
+        }
+      } catch (err) {
+        console.error('Manual step error:', err);
+      } finally {
+        btnManualStep.disabled = false;
+        btnManualStep.textContent = 'Step to Next Phase ▶';
+      }
+    });
+  }
+
+  // Manual Mode Playbook Action Buttons
+  document.querySelectorAll('.btn-playbook').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!activeExerciseId) {
+        alert('No active exercise running.');
+        return;
+      }
+      const playbook = btn.getAttribute('data-playbook');
+      const asset = btn.getAttribute('data-asset');
+      try {
+        const incRes = await fetch(`${API_BASE}/exercises/${activeExerciseId}/incidents`);
+        const incidents = incRes.ok ? await incRes.json() : [];
+        const uncontained = incidents.find(i => i.status !== 'contained') || incidents[0];
+        const incidentId = uncontained ? uncontained.id : 'inc-manual';
+
+        const res = await fetch(`${API_BASE}/exercises/${activeExerciseId}/respond`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            incidentId,
+            playbookName: playbook,
+            targetAsset: asset,
+            rationale: `Manual containment playbook '${playbook}' executed on ${asset} by SOC operator.`
+          })
+        });
+        if (res.ok) {
+          alert(`Successfully executed manual playbook '${playbook}' on ${asset}.`);
+          await pollLiveArenaState();
+        } else {
+          alert('Failed to execute playbook.');
+        }
+      } catch (err) {
+        alert('Error executing playbook: ' + err.message);
+      }
+    });
   });
 
   // Abort Exercise

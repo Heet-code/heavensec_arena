@@ -28,9 +28,15 @@ class ExerciseConfig(BaseModel):
     difficulty: str = "intermediate"
     targetAsset: Optional[str] = "AUTH-01"
     seed: Optional[int] = 42
-    mode: str = "autonomous"
+    mode: str = "automatic" # 'automatic' (autonomous multi-agent) or 'manual' (interactive step-by-step)
     simulationDuration: int = 15
     previousExerciseId: Optional[str] = None
+
+class ManualResponseRequest(BaseModel):
+    incidentId: str
+    playbookName: str
+    targetAsset: str
+    rationale: Optional[str] = None
 
 class TelemetryEvent(BaseModel):
     id: str

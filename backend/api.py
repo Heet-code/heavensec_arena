@@ -17,9 +17,9 @@ from database import (
     get_incidents_by_exercise, get_responses_by_exercise,
     get_evaluation, get_coach_recommendation
 )
-from models import ExerciseConfig, ExerciseDetail
+from models import ExerciseConfig, ExerciseDetail, ManualResponseRequest
 from simulation.scenarios import SCENARIOS, SYNTHETIC_ENVIRONMENT, get_scenario, list_all_scenarios
-from simulation.engine import start_simulation, cancel_simulation
+from simulation.engine import start_simulation, cancel_simulation, step_manual_simulation, execute_manual_response
 from simulation.coach import CoachEngine
 from simulation.orchestration import OrchestrationManager, OrchestrationMode
 
@@ -144,7 +144,7 @@ def create_exercise(config: ExerciseConfig):
         "scenarioId": config.scenarioId,
         "scenarioName": config.scenarioName or sc["name"],
         "environmentId": SYNTHETIC_ENVIRONMENT["id"],
-        "mode": config.mode or "autonomous",
+        "mode": "automatic" if (config.mode or "").lower() in ["automatic", "autonomous"] else "manual",
         "difficulty": config.difficulty,
         "seed": config.seed or 42,
         "status": "created",
@@ -176,14 +176,35 @@ async def start_exercise(exercise_id: str):
         raise HTTPException(status_code=404, detail="Exercise not found")
     if ex["status"] == "running":
         return ex
-    if ex["status"] in ["completed", "failed", "cancelled"]:
-        raise HTTPException(status_code=400, detail="Exercise already completed or terminated")
-    
     ex["status"] = "running"
     ex["currentPhase"] = "preparing"
+    if not ex.get("startedAt"):
+        ex["startedAt"] = datetime.now(timezone.utc).isoformat()
     save_exercise(ex)
     start_simulation(exercise_id)
     return get_exercise(exercise_id)
+
+@app.post("/api/exercises/{exercise_id}/step")
+async def step_exercise(exercise_id: str):
+    ex = get_exercise(exercise_id)
+    if not ex:
+        raise HTTPException(status_code=404, detail="Exercise not found")
+    result = await step_manual_simulation(exercise_id)
+    return result
+
+@app.post("/api/exercises/{exercise_id}/respond")
+def respond_exercise(exercise_id: str, payload: ManualResponseRequest):
+    ex = get_exercise(exercise_id)
+    if not ex:
+        raise HTTPException(status_code=404, detail="Exercise not found")
+    result = execute_manual_response(
+        exercise_id=exercise_id,
+        incident_id=payload.incidentId,
+        playbook_name=payload.playbookName,
+        target_asset=payload.targetAsset,
+        rationale=payload.rationale
+    )
+    return result
 
 @app.post("/api/exercises/{exercise_id}/cancel")
 def cancel_exercise(exercise_id: str):

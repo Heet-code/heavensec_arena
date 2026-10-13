@@ -48,8 +48,16 @@ This section maps the structural chapters, functional modules, and algorithms de
 | **Section 4.7.4** | Referee & Scoring Module | `backend/simulation/referee.py` (`RefereeAgent`) calculating Red Team, Blue Team, and Cyber-Resilience scores | `test_referee_full_mitigation`, `test_referee_uncontained_catastrophe` in `test_scoring.py`. |
 | **Section 4.7.5** | Incident Timeline Module | `backend/database.py` & `backend/api.py` (`GET /api/exercises/{id}/timeline`) | Replayable chronological event stream. |
 | **Section 4.7.6** | Dashboard & Reporting Module | `frontend/index.html`, `frontend/app.js`, `frontend/styles.css`, `backend/simulation/coach.py` | UI rendering, Markdown / JSON / CSV exports, `generate_documents.py`. |
+| **Section 4.7.7** | Simulation Operational Modes | `backend/simulation/engine.py`, `backend/api.py`, `frontend/app.js` (Automatic Mode vs Manual Human-in-the-Loop Mode) | `test_manual_mode_endpoints` in `test_api.py`, `test_manual_simulation_stepping_and_response` in `test_engine.py`. |
 | **Table 4.4 / 4.5** | Hardware & Software Requirements | Verified on 64-bit Windows workstation, Python 3.14+, SQLite3, FastAPI, Chrome/Edge/Firefox modern browsers. | Runtime inspection & environment health API. |
 | **Table 4.9** | Algorithm 4.9 (15-step simulation loop) | Implemented in `SimulationEngine.run_simulation()` in `backend/simulation/engine.py`. | Executed in `test_engine.py`. |
+
+### 2.3 Simulation Operational Modes (Automatic vs Manual)
+
+| Mode | Operational Flow | Operator Interaction | Backend Engine Mechanism | UI Controls Active |
+| :--- | :--- | :--- | :--- | :--- |
+| **Automatic Simulation Mode** | Autonomous async execution | Set & observe | Background asynchronous timer loop iterates phases (`PREPARING` → `RUNNING` → `DETECTING` → `INVESTIGATING` → `RESPONDING` → `EVALUATING` → `COMPLETED`) automatically. | Live progress bar, automated log feeds, timeline streaming, referee scorecards. |
+| **Manual Simulation Mode** | Human-in-the-loop interactive control | Interactive step & respond | Session registry (`active_manual_sessions`), `/step` endpoint advances simulation phase on demand, `/respond` endpoint dispatches tactical containment playbooks. | Phase Step button (`btn-manual-step`), Tactical Response Playbook toolbar (Isolate Host, Revoke Credentials, Block IP). |
 
 ---
 
@@ -107,7 +115,7 @@ Where:
 ## 6. Sign-off & Verification Summary
 
 - **Total Functional Test Cases:** 12 / 12 Verified (100% Pass Rate).
-- **Backend Test Suite Execution:** 13 pytest automated test suites passing.
+- **Backend Test Suite Execution:** 19 pytest automated test cases passing across 6 modules (100% pass rate in 2.26s).
 - **Frontend Architecture:** 100% Vanilla HTML5, CSS3, JavaScript (0 Tailwind, 0 React).
 - **Orchestration Runtime:** Multi-mode flexible architecture with Built-in deterministic default (0 credentials required).
 - **Documented & Certified by:** HavenSec Arena Engineering Team & Project Candidate Heet Kalthiya.

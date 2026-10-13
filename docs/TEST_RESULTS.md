@@ -11,7 +11,7 @@
 
 | Total Tests | Passed | Failed | Skipped | Execution Time | Pass Rate |
 |---|---|---|---|---|---|
-| **17** | **17** | **0** | **0** | **1.83s** | **100.0%** |
+| **19** | **19** | **0** | **0** | **2.26s** | **100.0%** |
 
 ---
 
@@ -27,9 +27,11 @@
 | `test_api.py` | `test_environment_endpoint` | Verifies synthetic environment asset manifest retrieval | **PASSED** | 0.04s |
 | `test_api.py` | `test_exercise_creation_and_lifecycle` | Validates exercise creation, start transition, and graceful cancellation | **PASSED** | 0.06s |
 | `test_api.py` | `test_system_health_and_orchestrator` | Validates `/api/system/health`, SQLite connectivity, and mode changes | **PASSED** | 0.05s |
+| `test_api.py` | `test_manual_mode_endpoints` | Verifies manual stepping `/step` and containment response `/respond` REST endpoints | **PASSED** | 0.06s |
 | `test_coach.py` | `test_coach_weakness_identification_recall` | Verifies coach detects low recall and selects authentication scenario | **PASSED** | 0.04s |
 | `test_coach.py` | `test_coach_comparison_delta` | Confirms calculation of $\Delta$ Resilience and $\Delta$ Blue scores | **PASSED** | 0.03s |
 | `test_engine.py` | `test_full_simulation_loop_fast` | Executes complete 15-step simulation loop and verifies artifact persistence | **PASSED** | 0.28s |
+| `test_engine.py` | `test_manual_simulation_stepping_and_response` | Verifies manual phase stepping and playbook response containment in engine | **PASSED** | 0.08s |
 | `test_orchestration.py` | `test_builtin_orchestrator` | Verifies deterministic offline planning, advice, and score explanations | **PASSED** | 0.04s |
 | `test_orchestration.py` | `test_external_orchestrator_graceful_fallback` | Verifies external adapter transparently falls back to Builtin mode | **PASSED** | 0.03s |
 | `test_orchestration.py` | `test_orchestration_manager_singleton_and_modes` | Validates singleton registry, mode toggling, and agent rosters | **PASSED** | 0.03s |
@@ -48,27 +50,29 @@ cachedir: .pytest_cache
 rootdir: D:\heavensec_arena
 plugins: anyio-4.14.0, asyncio-1.4.0
 asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
-collecting ... collected 17 items
+collecting ... collected 19 items
 
 backend/tests/test_agents.py::test_red_team_generation PASSED            [  5%]
-backend/tests/test_agents.py::test_blue_sentinel_brute_force_detection PASSED [ 11%]
-backend/tests/test_agents.py::test_investigation_and_response_lifecycle PASSED [ 17%]
-backend/tests/test_api.py::test_health_check PASSED                      [ 23%]
-backend/tests/test_api.py::test_scenario_endpoints PASSED                [ 29%]
-backend/tests/test_api.py::test_environment_endpoint PASSED              [ 35%]
-backend/tests/test_api.py::test_exercise_creation_and_lifecycle PASSED   [ 41%]
-backend/tests/test_api.py::test_system_health_and_orchestrator PASSED    [ 47%]
+backend/tests/test_agents.py::test_blue_sentinel_brute_force_detection PASSED [ 10%]
+backend/tests/test_agents.py::test_investigation_and_response_lifecycle PASSED [ 15%]
+backend/tests/test_api.py::test_health_check PASSED                      [ 21%]
+backend/tests/test_api.py::test_scenario_endpoints PASSED                [ 26%]
+backend/tests/test_api.py::test_environment_endpoint PASSED              [ 31%]
+backend/tests/test_api.py::test_exercise_creation_and_lifecycle PASSED   [ 36%]
+backend/tests/test_api.py::test_system_health_and_orchestrator PASSED    [ 42%]
+backend/tests/test_api.py::test_manual_mode_endpoints PASSED             [ 47%]
 backend/tests/test_coach.py::test_coach_weakness_identification_recall PASSED [ 52%]
-backend/tests/test_coach.py::test_coach_comparison_delta PASSED          [ 58%]
-backend/tests/test_engine.py::test_full_simulation_loop_fast PASSED      [ 64%]
-backend/tests/test_orchestration.py::test_builtin_orchestrator PASSED    [ 70%]
-backend/tests/test_orchestration.py::test_external_orchestrator_graceful_fallback PASSED [ 76%]
-backend/tests/test_orchestration.py::test_orchestration_manager_singleton_and_modes PASSED [ 82%]
-backend/tests/test_scoring.py::test_referee_empty_events PASSED          [ 88%]
+backend/tests/test_coach.py::test_coach_comparison_delta PASSED          [ 57%]
+backend/tests/test_engine.py::test_full_simulation_loop_fast PASSED      [ 63%]
+backend/tests/test_engine.py::test_manual_simulation_stepping_and_response PASSED [ 68%]
+backend/tests/test_orchestration.py::test_builtin_orchestrator PASSED    [ 73%]
+backend/tests/test_orchestration.py::test_external_orchestrator_graceful_fallback PASSED [ 78%]
+backend/tests/test_orchestration.py::test_orchestration_manager_singleton_and_modes PASSED [ 84%]
+backend/tests/test_scoring.py::test_referee_empty_events PASSED          [ 89%]
 backend/tests/test_scoring.py::test_referee_full_mitigation PASSED       [ 94%]
 backend/tests/test_scoring.py::test_referee_uncontained_catastrophe PASSED [100%]
 
-======================== 17 passed, 1 warning in 1.83s ========================
+======================== 19 passed, 1 warning in 2.26s ========================
 ```
 
 ---

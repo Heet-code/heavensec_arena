@@ -378,7 +378,7 @@ def save_response_action(action: Dict[str, Any], db_path: Optional[str] = None):
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
     """, (
         action["id"], action["exerciseId"], action["incidentId"], action["playbookName"],
-        action["targetAsset"], action["actionType"], action["status"], action["rationale"], action["timestamp"]
+        action["targetAsset"], action.get("actionType", "containment"), action["status"], action["rationale"], action["timestamp"]
     ))
     conn.commit()
     conn.close()

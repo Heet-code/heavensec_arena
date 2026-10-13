@@ -50,7 +50,7 @@ The system transitions across explicit lifecycle states (`CREATED` → `PREPARIN
 
 The evaluation model distinguishes **Red Team Effectiveness** (0–100), **Blue Team Defense** (0–100), and an empirical **Cyber-Resilience Score** (0–100), proving that resilience is not a simplistic average of opposing teams. Furthermore, the Security Coach analyzes metric bottlenecks using a deterministic policy ladder, recommending targeted follow-up exercises to produce verifiable delta improvements ($\Delta S_{\text{Resilience}}$). 
 
-The platform incorporates a vendor-independent, flexible orchestration architecture featuring a deterministic Built-in mode (zero external credentials required) and pluggable external adapters. Implemented strictly in Python/FastAPI, SQLite3, HTML5, CSS3, and Vanilla JavaScript, the platform includes a 17-case automated pytest suite passing at 100% reliability.
+The platform features two operational simulation modes: **Automatic Simulation Mode** (autonomous multi-agent execution) and **Manual Simulation Mode** (interactive human-in-the-loop step-by-step containment). It incorporates a vendor-independent, flexible orchestration architecture with a deterministic Built-in mode (zero external credentials required) and pluggable external adapters. Implemented strictly in Python/FastAPI, SQLite3, HTML5, CSS3, and Vanilla JavaScript, the platform includes a 19-case automated pytest suite passing at 100% reliability.
 
 ---
 
@@ -258,6 +258,22 @@ The Security Coach inspects metric breakdowns using a priority ladder:
 4. Investigation < 75% $\to$ Flag Correlation Gap $\to$ Recommend `scenario-credential-compromise`
 5. Precision < 70% $\to$ Flag False-Positive Noise $\to$ Recommend `scenario-web-misconfig`
 6. Mastery (All $\ge$ 85%) $\to$ Escalate Challenge to Advanced difficulty
+
+### 4.7 Two Simulation Operational Modes
+HavenSec Arena implements two distinct execution operational modes to support both unattended benchmark simulations and interactive viva examinations:
+1. **Automatic Simulation Mode (Autonomous Multi-Agent Mode):**
+   - The simulation lifecycle executes autonomously from start to finish.
+   - The Red Team Agent injects synthetic attack patterns across each phase according to the configured difficulty multiplier and pseudorandom seed.
+   - The Blue Team Sentinel continuously correlates telemetry and emits alerts.
+   - The Investigation Analyst correlates alerts into incident graphs.
+   - The Response Commander automatically selects and executes containment playbooks (host isolation, credential revocation, IP blocking).
+   - The Referee audits outcomes against ground-truth and scores cyber-resilience automatically.
+
+2. **Manual Simulation Mode (Interactive Human-in-the-Loop Mode):**
+   - Designed specifically for student demonstration and viva defense before faculty examiners.
+   - The simulation does not auto-advance; the student/operator controls phase progression step-by-step (`POST /api/exercises/{id}/step`).
+   - The student can inspect telemetry, observe incoming detection alerts, and manually execute tactical containment playbooks (`POST /api/exercises/{id}/respond`) against targeted assets (`AUTH-01`, `WEB-01`, `API-01`).
+   - The Referee evaluates the exercise incorporating the student's manual containment decisions, proving real-time operator decision-making.
 
 ---
 

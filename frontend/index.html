@@ -137,6 +137,14 @@
 
               <div class="form-row">
                 <div class="form-group flex-1">
+                  <label for="select-mode">Simulation Mode</label>
+                  <select id="select-mode" class="form-control">
+                    <option value="automatic" selected>Automatic Simulation (Autonomous Multi-Agent)</option>
+                    <option value="manual">Manual Simulation (Interactive Step-by-Step)</option>
+                  </select>
+                </div>
+
+                <div class="form-group flex-1">
                   <label for="select-difficulty">Difficulty Level</label>
                   <select id="select-difficulty" class="form-control">
                     <option value="beginner">Beginner (Explicit indicators, standard rate)</option>
@@ -144,11 +152,11 @@
                     <option value="advanced">Advanced (Stealth evasion, multi-asset)</option>
                   </select>
                 </div>
+              </div>
 
-                <div class="form-group flex-1">
-                  <label for="input-seed">Reproducibility Seed</label>
-                  <input type="number" id="input-seed" class="form-control" value="42" required>
-                </div>
+              <div class="form-group">
+                <label for="input-seed">Reproducibility Seed</label>
+                <input type="number" id="input-seed" class="form-control" value="42" required>
               </div>
 
               <div class="form-group">
@@ -183,10 +191,28 @@
             <div class="arena-meta">
               <span>Active Exercise: <strong id="arena-ex-id">None</strong></span>
               <span>Scenario: <strong id="arena-scenario-name">--</strong></span>
+              <span>Mode: <strong id="arena-mode-badge" class="badge">--</strong></span>
               <span id="arena-phase-badge" class="badge badge-idle">IDLE</span>
             </div>
             <div class="arena-actions">
+              <button id="btn-manual-step" class="btn btn-primary btn-sm hidden">Step to Next Phase ▶</button>
               <button id="btn-cancel-sim" class="btn btn-danger btn-sm hidden">Abort Exercise</button>
+            </div>
+          </div>
+
+          <!-- Manual Mode Tactical Containment Bar -->
+          <div id="manual-tactical-bar" class="card bg-darker mt-10 hidden">
+            <div class="tactical-bar-inner">
+              <div>
+                <strong>Manual SOC Containment Controls:</strong>
+                <span class="subtext ml-10">Select and trigger defensive response playbooks against simulated assets.</span>
+              </div>
+              <div class="tag-cloud mt-5">
+                <button class="btn btn-secondary btn-sm btn-playbook" data-playbook="host-isolation" data-asset="AUTH-01">Isolate AUTH-01</button>
+                <button class="btn btn-secondary btn-sm btn-playbook" data-playbook="host-isolation" data-asset="WEB-01">Isolate WEB-01</button>
+                <button class="btn btn-secondary btn-sm btn-playbook" data-playbook="credential-revocation" data-asset="AUTH-01">Revoke Credentials</button>
+                <button class="btn btn-secondary btn-sm btn-playbook" data-playbook="ip-block" data-asset="API-01">Block IP on API-01</button>
+              </div>
             </div>
           </div>
 
