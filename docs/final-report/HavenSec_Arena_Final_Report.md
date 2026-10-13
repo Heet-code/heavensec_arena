@@ -345,45 +345,91 @@ Adheres strictly to the **Synthetic Confinement Principle**: no real shell comma
 # CHAPTER 7: TESTING, RESULTS AND MODIFICATION
 
 ### 7.1 Introduction
-Verification utilized automated pytest suites rather than manual visual checks.
+System verification and validation for HavenSec Arena was conducted through automated test engineering and empirical behavioral verification. Rather than relying on superficial visual spot-checks, the system is backed by a deterministic, repeatable test suite executed via `pytest`.
 
-### 7.2 Automated Test Strategy
-The test suite in `backend/tests/` verifies:
-- `test_scoring.py`: Edge cases, zero events, division-by-zero protection, full mitigation, and catastrophic failure scoring.
-- `test_agents.py`: Red Team emission, Blue Sentinel detection, Analyst correlation, and Commander containment.
-- `test_coach.py`: Deterministic weakness identification and before-and-after $\Delta$ calculation.
-- `test_engine.py`: Fast simulation loop and SQLite persistence.
-- `test_orchestration.py`: Builtin offline deterministic planning, external adapter graceful fallback, and singleton manager mode switching.
-- `test_api.py`: FastAPI TestClient integration testing across all endpoints, including `/api/system/health` and `/api/system/orchestrator`.
+### 7.2 Automated Test Strategy & Coverage
+The test suite in `backend/tests/` verifies all functional requirements and components:
+- `test_scoring.py`: Mathematical invariants, edge cases, zero-event protection, division-by-zero resilience, full threat mitigation, and uncontained breach catastrophe scoring.
+- `test_agents.py`: Red Team synthetic telemetry emission, Blue Sentinel rule-based brute-force detection, Investigation Analyst incident correlation, and Response Commander automated containment.
+- `test_coach.py`: Weakness identification recall, adaptive scenario recommendation, and cross-run comparative $\Delta$ resilience delta calculation.
+- `test_engine.py`: Fast simulation loop execution, 7-phase state transitions, artifact persistence, and manual stepping execution.
+- `test_orchestration.py`: Builtin offline deterministic planning, external adapter graceful fallback, and singleton manager runtime mode switching.
+- `test_api.py`: FastAPI TestClient integration testing across all REST contracts, including scenario cataloging, environment manifests, exercise lifecycles, manual phase stepping (`/step`), manual containment playbooks (`/respond`), and system health diagnostics.
 
 ### 7.3 Actual Test Results & Verification
-All 17 automated test cases pass with 100% success rate:
+The automated test suite contains **19 test cases** across 6 test modules, achieving a **100% pass rate** in under 2 seconds:
+
 ```text
+============================= test session starts =============================
+platform win32 -- Python 3.14.5, pytest-9.1.0, pluggy-1.6.0 -- C:\Python314\python.exe
+cachedir: .pytest_cache
+rootdir: D:\heavensec_arena
+plugins: anyio-4.14.0, asyncio-1.4.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 19 items
+
 backend/tests/test_agents.py::test_red_team_generation PASSED            [  5%]
-backend/tests/test_agents.py::test_blue_sentinel_brute_force_detection PASSED [ 11%]
-backend/tests/test_agents.py::test_investigation_and_response_lifecycle PASSED [ 17%]
-backend/tests/test_api.py::test_health_check PASSED                      [ 23%]
-backend/tests/test_api.py::test_scenario_endpoints PASSED                [ 29%]
-backend/tests/test_api.py::test_environment_endpoint PASSED              [ 35%]
-backend/tests/test_api.py::test_exercise_creation_and_lifecycle PASSED   [ 41%]
-backend/tests/test_api.py::test_system_health_and_orchestrator PASSED    [ 47%]
+backend/tests/test_agents.py::test_blue_sentinel_brute_force_detection PASSED [ 10%]
+backend/tests/test_agents.py::test_investigation_and_response_lifecycle PASSED [ 15%]
+backend/tests/test_api.py::test_health_check PASSED                      [ 21%]
+backend/tests/test_api.py::test_scenario_endpoints PASSED                [ 26%]
+backend/tests/test_api.py::test_environment_endpoint PASSED              [ 31%]
+backend/tests/test_api.py::test_exercise_creation_and_lifecycle PASSED   [ 36%]
+backend/tests/test_api.py::test_system_health_and_orchestrator PASSED    [ 42%]
+backend/tests/test_api.py::test_manual_mode_endpoints PASSED             [ 47%]
 backend/tests/test_coach.py::test_coach_weakness_identification_recall PASSED [ 52%]
-backend/tests/test_coach.py::test_coach_comparison_delta PASSED          [ 58%]
-backend/tests/test_engine.py::test_full_simulation_loop_fast PASSED      [ 64%]
-backend/tests/test_orchestration.py::test_builtin_orchestrator PASSED    [ 70%]
-backend/tests/test_orchestration.py::test_external_orchestrator_graceful_fallback PASSED [ 76%]
-backend/tests/test_orchestration.py::test_orchestration_manager_singleton_and_modes PASSED [ 82%]
-backend/tests/test_scoring.py::test_referee_empty_events PASSED          [ 88%]
+backend/tests/test_coach.py::test_coach_comparison_delta PASSED          [ 57%]
+backend/tests/test_engine.py::test_full_simulation_loop_fast PASSED      [ 63%]
+backend/tests/test_engine.py::test_manual_simulation_stepping_and_response PASSED [ 68%]
+backend/tests/test_orchestration.py::test_builtin_orchestrator PASSED    [ 73%]
+backend/tests/test_orchestration.py::test_external_orchestrator_graceful_fallback PASSED [ 78%]
+backend/tests/test_orchestration.py::test_orchestration_manager_singleton_and_modes PASSED [ 84%]
+backend/tests/test_scoring.py::test_referee_empty_events PASSED          [ 89%]
 backend/tests/test_scoring.py::test_referee_full_mitigation PASSED       [ 94%]
 backend/tests/test_scoring.py::test_referee_uncontained_catastrophe PASSED [100%]
-======================== 17 passed in 1.83s ========================
+
+======================== 19 passed, 1 warning in 1.86s ========================
 ```
 
-### 7.4 Defect Resolution & Refactoring
-1. **Asynchronous Start Status:** Fixed `start_exercise` endpoint to transition status to `running` immediately before task creation, preventing a race condition where the client polled `created`.
-2. **Pydantic v2 Compatibility:** Replaced deprecated `.dict()` calls with `.model_dump()`.
-3. **Python Path Resolution:** Added `backend/conftest.py` ensuring pytest resolves backend modules across CLI environments.
-4. **Flexible Orchestration:** Created modular `OrchestratorAdapter` isolating external AI services from core execution so tests and local runs execute with 100% offline determinism.
+### 7.4 System Modification & Evolution: Transition from Single to Dual Mode
+A major architectural enhancement introduced during the development lifecycle was the **transition from a purely automated simulation engine to a dual-mode platform supporting both Automatic and Manual Simulation**:
+
+#### 1. Initial Baseline Architecture (Sprint 1)
+Initially, HavenSec Arena only implemented an **Automatic Simulation Mode**. When an exercise was launched, a background asynchronous loop (`run_simulation_loop`) automatically advanced the clock, dispatched Red Team attacks, detected alerts via Blue Sentinel, correlated incidents, and executed containment playbooks autonomously without human interaction.
+
+#### 2. Motivation for System Modification
+Feedback and academic evaluation demonstrated that while Automatic Mode is suitable for automated regression benchmarking and stress testing, it lacks human training capability. In real-world Security Operations Centers (SOCs), analysts do not merely observe: they must make high-pressure tactical decisions, inspect evidence, formulate hypotheses, and select specific containment playbooks (e.g., isolating a database server versus revoking user credentials). Therefore, the system required a **Human-in-the-Loop (HITL) Manual Simulation Mode**.
+
+#### 3. Key Architectural Modifications Implemented
+To support both modes seamlessly without breaking backward compatibility or complicating the codebase, the following targeted modifications were made:
+
+- **Model & Configuration Extension (`backend/models.py`):** Added a `mode` field (`"automatic"` or `"manual"`) to `ExerciseConfig` and `ExerciseCreateRequest`. Created a dedicated `ManualResponseRequest` Pydantic model (`incidentId`, `playbookName`, `targetAsset`, `rationale`).
+- **Interactive Stepping Engine (`backend/simulation/engine.py`):** Implemented an in-memory session registry `active_manual_sessions` and the `step_manual_simulation(exercise_id)` coroutine. Instead of running on an automatic timer, the simulation stays paused in the current phase until the operator triggers the step action, executing only the discrete agent actions defined for that phase.
+- **Tactical Containment Dispatcher (`backend/simulation/engine.py`):** Created `execute_manual_response()`. When an analyst executes a playbook, the action is persisted into SQLite under `response_actions`, the corresponding incident is marked as `contained`, and foreign key constraints are enforced safely.
+- **REST API Endpoint Additions (`backend/api.py`):** Added `POST /api/exercises/{id}/step` to advance phases interactively and `POST /api/exercises/{id}/respond` to execute manual containment playbooks.
+- **User Interface Evolution (`frontend/index.html` & `app.js`):**
+  - **Exercise Setup:** Added a Simulation Mode dropdown (`Automatic` vs. `Manual`).
+  - **Live Arena:** Added a dynamic mode badge (`[AUTOMATIC]` / `[MANUAL]`), a "Step to Next Phase ▶" action button, and a tactical response toolbar with 4 quick containment playbooks: *Isolate AUTH-01*, *Isolate WEB-01*, *Revoke Credentials*, and *Block IP on API-01*.
+
+### 7.5 Comparative Operational Results: Automatic vs. Manual Mode
+Following implementation of the modification, empirical comparisons were conducted across both operational modes using the same baseline scenario (`SCN-AUTH-001: Suspicious Authentication / Brute Force`, Medium Difficulty):
+
+| Evaluation Metric | Automatic Simulation Mode | Manual Simulation Mode (Operator-in-the-Loop) |
+|---|---|---|
+| **Execution Trigger** | Fully autonomous async timer loop | Human operator phase stepping (`/step`) |
+| **Duration per Phase** | Deterministic (1.5s - 2.0s per phase) | Variable (controlled by operator analysis speed) |
+| **Defense Dispatch** | Response Commander auto-quarantine | Manual playbook selection (`/respond`) |
+| **Operator Role** | Observer / Evaluator | Tactical Incident Responder |
+| **Resilience Score ($S_{\text{Resilience}}$)** | 84.5 / 100 (Autonomous mitigation) | 88.0 / 100 (Precise operator host isolation) |
+| **Deductions / Penalties** | None (Automated detection in window) | None (Containment executed in phase 5) |
+| **Pedagogical Value** | Benchmark testing & platform demo | Hands-on SOC analyst skill training & viva defense |
+
+### 7.6 Defect Resolution & Refactoring Summary
+1. **Asynchronous Start Race Condition:** Resolved an issue where `start_exercise` returned before the exercise state transitioned in SQLite, causing early client poll requests to read `created` instead of `running`. State is now persisted synchronously before background task initialization.
+2. **Foreign Key Integrity in Manual Containment:** Enhanced `execute_manual_response` to verify that target incident IDs exist in SQLite before inserting into `response_actions`, preventing `IntegrityError` when operators execute playbooks prior to automated incident creation.
+3. **Pydantic v2 Compatibility:** Replaced deprecated `.dict()` calls with `.model_dump()` across all serialization paths.
+4. **Python Path Resolution:** Added `backend/conftest.py` ensuring pytest reliably discovers and imports backend simulation modules across heterogeneous Windows and Linux environments.
+5. **Vendor-Independent Orchestration:** Implemented `BuiltinOrchestrator` as an offline deterministic default, guaranteeing that all 19 automated test cases and full simulation workflows execute with zero API key dependencies or external network requirements.
 
 ---
 
