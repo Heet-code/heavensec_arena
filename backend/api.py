@@ -4,11 +4,13 @@ Exposes validated endpoints for scenarios, exercises, simulation lifecycle,
 telemetry, incidents, evaluations, coach recommendations, and cross-run comparisons.
 """
 
+import os
 import uuid
 from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from database import (
     get_db,
@@ -370,3 +372,8 @@ def get_exercise_report(exercise_id: str):
         report_md += f"- **[{r['timestamp']}]** `{r['playbookName']}` targeting `{r['targetAsset']}`: {r['rationale']}\n"
 
     return {"exerciseId": exercise_id, "markdown": report_md}
+
+# Mount static frontend for direct access and fallback
+frontend_dir = os.path.join(os.path.dirname(__file__), "..", "frontend")
+if os.path.exists(frontend_dir):
+    app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
