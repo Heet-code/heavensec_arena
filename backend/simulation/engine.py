@@ -64,7 +64,8 @@ async def run_simulation_loop(exercise_id: str, fast_mode: bool = False):
     save_exercise(ex)
 
     # Instantiate agents
-    red = RedTeamAgent(scenario=scenario, difficulty=difficulty, seed=seed)
+    target_asset = ex.get("targetAsset")
+    red = RedTeamAgent(scenario=scenario, difficulty=difficulty, seed=seed, target_asset=target_asset)
     sentinel = BlueTeamSentinel()
     analyst = InvestigationAnalyst()
     commander = ResponseCommander()
@@ -212,8 +213,9 @@ def get_or_create_manual_session(exercise_id: str) -> Dict[str, Any]:
     seed = ex.get("seed", 42)
     difficulty = ex.get("difficulty", "intermediate")
     
+    target_asset = ex.get("targetAsset")
     session = {
-        "red": RedTeamAgent(scenario=scenario, difficulty=difficulty, seed=seed),
+        "red": RedTeamAgent(scenario=scenario, difficulty=difficulty, seed=seed, target_asset=target_asset),
         "sentinel": BlueTeamSentinel(),
         "analyst": InvestigationAnalyst(),
         "commander": ResponseCommander(),

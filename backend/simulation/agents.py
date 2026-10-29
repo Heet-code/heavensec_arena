@@ -39,10 +39,11 @@ def make_telemetry(
     }
 
 class RedTeamAgent:
-    def __init__(self, scenario: Dict[str, Any], difficulty: str = "intermediate", seed: int = 42):
+    def __init__(self, scenario: Dict[str, Any], difficulty: str = "intermediate", seed: int = 42, target_asset: Optional[str] = None):
         self.scenario = scenario
         self.difficulty = difficulty
         self.seed = seed
+        self.target_asset = target_asset
         self.rng = random.Random(seed)
         self.step = 0
         self.achieved_objectives = []
@@ -63,6 +64,7 @@ class RedTeamAgent:
 
         # Scenario-specific synthetic adversarial event sequence
         if scenario_id == "scenario-suspicious-auth":
+            auth_target = self.target_asset or "AUTH-01"
             if self.step == 0 and current_time_ms >= 2000:
                 events.append(make_telemetry(
                     exercise_id, get_ts(0), "HTTP_REQUEST", "WEB-01", "198.51.100.42", "low", phase,
@@ -77,7 +79,7 @@ class RedTeamAgent:
                 num_failures = 3 if self.difficulty == "beginner" else (5 if self.difficulty == "intermediate" else 7)
                 for i in range(num_failures):
                     events.append(make_telemetry(
-                        exercise_id, get_ts(i * 400), "LOGIN_FAILED", "AUTH-01", "employee_002", "medium", phase,
+                        exercise_id, get_ts(i * 400), "LOGIN_FAILED", auth_target, "employee_002", "medium", phase,
                         {"reason": "Invalid password credentials", "attemptNumber": i + 1, "targetService": "LDAP"},
                         "gt-auth-02", True
                     ))
@@ -86,7 +88,7 @@ class RedTeamAgent:
 
             elif self.step == 2 and current_time_ms >= 9000:
                 events.append(make_telemetry(
-                    exercise_id, get_ts(0), "SESSION_HIJACK_ATTEMPT", "AUTH-01", "employee_002", "critical", phase,
+                    exercise_id, get_ts(0), "SESSION_HIJACK_ATTEMPT", auth_target, "employee_002", "critical", phase,
                     {"token": "simulated_tampered_jwt", "anomaly": "IP location jump from internal to external"},
                     "gt-auth-03", True
                 ))
@@ -94,9 +96,10 @@ class RedTeamAgent:
                 self.step += 1
 
         elif scenario_id == "scenario-api-security":
+            api_target = self.target_asset or "API-01"
             if self.step == 0 and current_time_ms >= 2000:
                 events.append(make_telemetry(
-                    exercise_id, get_ts(0), "API_ANOMALY", "API-01", "203.0.113.15", "medium", phase,
+                    exercise_id, get_ts(0), "API_ANOMALY", api_target, "203.0.113.15", "medium", phase,
                     {"endpoint": "/api/v1/users", "queryRate": "50 req/sec", "status": 429},
                     "gt-api-01", True
                 ))
@@ -105,7 +108,7 @@ class RedTeamAgent:
 
             elif self.step == 1 and current_time_ms >= 5000:
                 events.append(make_telemetry(
-                    exercise_id, get_ts(0), "PARAMETER_TAMPERING", "API-01", "203.0.113.15", "high", phase,
+                    exercise_id, get_ts(0), "PARAMETER_TAMPERING", api_target, "203.0.113.15", "high", phase,
                     {"parameter": "user_id=../../admin", "payload": "IDOR probe"},
                     "gt-api-02", True
                 ))
@@ -122,9 +125,10 @@ class RedTeamAgent:
                 self.step += 1
 
         elif scenario_id == "scenario-web-misconfig":
+            web_target = self.target_asset or "WEB-01"
             if self.step == 0 and current_time_ms >= 2000:
                 events.append(make_telemetry(
-                    exercise_id, get_ts(0), "PATH_TRAVERSAL_ATTEMPT", "WEB-01", "198.51.100.99", "medium", phase,
+                    exercise_id, get_ts(0), "PATH_TRAVERSAL_ATTEMPT", web_target, "198.51.100.99", "medium", phase,
                     {"path": "/static/../../etc/dummy_passwd", "method": "GET"},
                     "gt-web-01", True
                 ))
@@ -133,7 +137,7 @@ class RedTeamAgent:
 
             elif self.step == 1 and current_time_ms >= 6000:
                 events.append(make_telemetry(
-                    exercise_id, get_ts(0), "DEBUG_PROBE", "WEB-01", "198.51.100.99", "high", phase,
+                    exercise_id, get_ts(0), "DEBUG_PROBE", web_target, "198.51.100.99", "high", phase,
                     {"path": "/_debug/env", "exposedVariables": ["DATABASE_HOST", "SECRET_KEY_MOCK"]},
                     "gt-web-02", True
                 ))
@@ -141,9 +145,10 @@ class RedTeamAgent:
                 self.step += 1
 
         elif scenario_id == "scenario-credential-compromise":
+            cred_target = self.target_asset or "AUTH-01"
             if self.step == 0 and current_time_ms >= 2000:
                 events.append(make_telemetry(
-                    exercise_id, get_ts(0), "TOKEN_REPLAY", "AUTH-01", "service_account_01", "high", phase,
+                    exercise_id, get_ts(0), "TOKEN_REPLAY", cred_target, "service_account_01", "high", phase,
                     {"source": "leaked_ci_token", "action": "Replay token on auth gateway"},
                     "gt-cred-01", True
                 ))
@@ -169,9 +174,10 @@ class RedTeamAgent:
                 self.step += 1
 
         elif scenario_id == "scenario-privilege-escalation":
+            pe_target = self.target_asset or "AUTH-01"
             if self.step == 0 and current_time_ms >= 2000:
                 events.append(make_telemetry(
-                    exercise_id, get_ts(0), "ROLE_QUERY", "AUTH-01", "employee_001", "low", phase,
+                    exercise_id, get_ts(0), "ROLE_QUERY", pe_target, "employee_001", "low", phase,
                     {"query": "GET /roles/admin", "response": "403 Forbidden"},
                     "gt-pe-01", True
                 ))
@@ -180,7 +186,7 @@ class RedTeamAgent:
 
             elif self.step == 1 and current_time_ms >= 6000:
                 events.append(make_telemetry(
-                    exercise_id, get_ts(0), "PRIVILEGE_CHANGE", "AUTH-01", "employee_001", "critical", phase,
+                    exercise_id, get_ts(0), "PRIVILEGE_CHANGE", pe_target, "employee_001", "critical", phase,
                     {"modifiedRole": "GlobalAdmin", "method": "Exploiting misconfigured token claim"},
                     "gt-pe-02", True
                 ))
@@ -188,9 +194,10 @@ class RedTeamAgent:
                 self.step += 1
 
         elif scenario_id == "scenario-ransomware-controlled":
+            rw_target = self.target_asset or "FILE-01"
             if self.step == 0 and current_time_ms >= 2000:
                 events.append(make_telemetry(
-                    exercise_id, get_ts(0), "MASS_FILE_ENUM", "FILE-01", "10.0.1.99", "medium", phase,
+                    exercise_id, get_ts(0), "MASS_FILE_ENUM", rw_target, "10.0.1.99", "medium", phase,
                     {"filesTraversed": 450, "pattern": "*.docx, *.pdf, *.xlsx", "speed": "high"},
                     "gt-rw-01", True
                 ))
@@ -199,7 +206,7 @@ class RedTeamAgent:
 
             elif self.step == 1 and current_time_ms >= 5000:
                 events.append(make_telemetry(
-                    exercise_id, get_ts(0), "ENCRYPTION_INTENT", "FILE-01", "10.0.1.99", "critical", phase,
+                    exercise_id, get_ts(0), "ENCRYPTION_INTENT", rw_target, "10.0.1.99", "critical", phase,
                     {"simulatedEntropy": 7.98, "renamedExtension": ".locked", "fileCount": 12},
                     "gt-rw-02", True
                 ))
@@ -208,7 +215,7 @@ class RedTeamAgent:
 
             elif self.step == 2 and current_time_ms >= 9000:
                 events.append(make_telemetry(
-                    exercise_id, get_ts(0), "BACKUP_DISRUPTION_ATTEMPT", "FILE-01", "10.0.1.99", "critical", phase,
+                    exercise_id, get_ts(0), "BACKUP_DISRUPTION_ATTEMPT", rw_target, "10.0.1.99", "critical", phase,
                     {"command": "vssadmin delete shadows /all /quiet", "simulatedOutcome": "blocked_by_policy"},
                     "gt-rw-03", True
                 ))
@@ -235,6 +242,7 @@ class BlueTeamSentinel:
         new_telemetry = []
 
         for evt in events:
+            evt_ts = evt.get("timestamp") or get_ts(0)
             # Rule 1: Brute Force Detection
             if evt["type"] == "LOGIN_FAILED":
                 self.login_failures += 1
@@ -246,7 +254,7 @@ class BlueTeamSentinel:
                         "ruleId": "RULE-AUTH-BRUTE",
                         "title": "Anomalous Brute-Force Authentication Activity",
                         "severity": "high",
-                        "timestamp": get_ts(0),
+                        "timestamp": evt_ts,
                         "sourceAsset": evt["sourceAsset"],
                         "evidence": [f"{self.login_failures} consecutive failed logins for {evt['actor']}"],
                         "groundTruthDetected": True
@@ -265,7 +273,7 @@ class BlueTeamSentinel:
                     "ruleId": "RULE-SESSION-HIJACK",
                     "title": "JWT Session Tampering & Geographic Anomaly",
                     "severity": "critical",
-                    "timestamp": get_ts(0),
+                    "timestamp": evt_ts,
                     "sourceAsset": evt["sourceAsset"],
                     "evidence": ["Anomalous JWT payload with external origin"],
                     "groundTruthDetected": True
@@ -284,7 +292,7 @@ class BlueTeamSentinel:
                     "ruleId": "RULE-API-ABUSE",
                     "title": "Excessive API Bursts & Parameter Tampering Probe",
                     "severity": "high",
-                    "timestamp": get_ts(0),
+                    "timestamp": evt_ts,
                     "sourceAsset": evt["sourceAsset"],
                     "evidence": [f"Unusual parameter payload on {evt['sourceAsset']}"],
                     "groundTruthDetected": True
@@ -304,7 +312,7 @@ class BlueTeamSentinel:
                     "ruleId": "RULE-DATA-EXFIL",
                     "title": "Unauthorized Bulk Data Export Attempt",
                     "severity": "critical",
-                    "timestamp": get_ts(0),
+                    "timestamp": evt_ts,
                     "sourceAsset": evt["sourceAsset"],
                     "evidence": ["High volume row query on database"],
                     "groundTruthDetected": True
@@ -323,7 +331,7 @@ class BlueTeamSentinel:
                     "ruleId": "RULE-WEB-TRAVERSAL",
                     "title": "Path Traversal and Debug Endpoint Probe Detected",
                     "severity": "high",
-                    "timestamp": get_ts(0),
+                    "timestamp": evt_ts,
                     "sourceAsset": evt["sourceAsset"],
                     "evidence": [f"Sensitive URI probe on {evt['sourceAsset']}"],
                     "groundTruthDetected": True
@@ -343,7 +351,7 @@ class BlueTeamSentinel:
                     "ruleId": "RULE-LATERAL-MOVE",
                     "title": "Lateral Movement & Unauthorized Host Traversal",
                     "severity": "critical",
-                    "timestamp": get_ts(0),
+                    "timestamp": evt_ts,
                     "sourceAsset": evt["sourceAsset"],
                     "evidence": [f"SMB traverse or token replay against {evt['sourceAsset']}"],
                     "groundTruthDetected": True
@@ -363,7 +371,7 @@ class BlueTeamSentinel:
                     "ruleId": "RULE-PRIV-ESC",
                     "title": "Unauthorized Role Elevation to Administrative Claims",
                     "severity": "critical",
-                    "timestamp": get_ts(0),
+                    "timestamp": evt_ts,
                     "sourceAsset": evt["sourceAsset"],
                     "evidence": ["Unauthorized role escalation in synthetic IAM directory"],
                     "groundTruthDetected": True
@@ -382,7 +390,7 @@ class BlueTeamSentinel:
                     "ruleId": "RULE-RANSOM-ACTIVITY",
                     "title": "High Entropy File Writes & Simulated Encryption Intent",
                     "severity": "critical",
-                    "timestamp": get_ts(0),
+                    "timestamp": evt_ts,
                     "sourceAsset": evt["sourceAsset"],
                     "evidence": ["High entropy modification and mass rename activity detected"],
                     "groundTruthDetected": True

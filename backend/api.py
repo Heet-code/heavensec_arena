@@ -147,6 +147,7 @@ def create_exercise(config: ExerciseConfig):
         "mode": "automatic" if (config.mode or "").lower() in ["automatic", "autonomous"] else "manual",
         "difficulty": config.difficulty,
         "seed": config.seed or 42,
+        "targetAsset": config.targetAsset,
         "status": "created",
         "currentPhase": "created",
         "startedAt": None,
@@ -174,6 +175,8 @@ async def start_exercise(exercise_id: str):
     ex = get_exercise(exercise_id)
     if not ex:
         raise HTTPException(status_code=404, detail="Exercise not found")
+    if ex["status"] in ["completed", "cancelled", "failed"]:
+        raise HTTPException(status_code=400, detail=f"Cannot start exercise {exercise_id} with terminal status '{ex['status']}'")
     if ex["status"] == "running":
         return ex
     ex["status"] = "running"
@@ -189,14 +192,21 @@ async def step_exercise(exercise_id: str):
     ex = get_exercise(exercise_id)
     if not ex:
         raise HTTPException(status_code=404, detail="Exercise not found")
-    result = await step_manual_simulation(exercise_id)
-    return result
+    if ex["status"] in ["completed", "cancelled", "failed"]:
+        raise HTTPException(status_code=400, detail=f"Cannot step exercise {exercise_id} with terminal status '{ex['status']}'")
+    try:
+        result = await step_manual_simulation(exercise_id)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/exercises/{exercise_id}/respond")
 def respond_exercise(exercise_id: str, payload: ManualResponseRequest):
     ex = get_exercise(exercise_id)
     if not ex:
         raise HTTPException(status_code=404, detail="Exercise not found")
+    if ex["status"] != "running":
+        raise HTTPException(status_code=400, detail=f"Cannot execute response on exercise {exercise_id} with status '{ex['status']}' (must be running)")
     result = execute_manual_response(
         exercise_id=exercise_id,
         incident_id=payload.incidentId,
@@ -211,6 +221,8 @@ def cancel_exercise(exercise_id: str):
     ex = get_exercise(exercise_id)
     if not ex:
         raise HTTPException(status_code=404, detail="Exercise not found")
+    if ex["status"] in ["completed", "cancelled", "failed"]:
+        raise HTTPException(status_code=400, detail=f"Cannot cancel exercise {exercise_id} with terminal status '{ex['status']}'")
     cancel_simulation(exercise_id)
     return get_exercise(exercise_id)
 

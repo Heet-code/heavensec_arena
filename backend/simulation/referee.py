@@ -124,7 +124,8 @@ class RefereeAgent:
         # Investigation Completeness (20% weight)
         investigated_count = len(incidents)
         if investigated_count > 0:
-            investigation_score = min(100.0, 50.0 + (len(incidents[0].get("evidence", [])) * 25.0))
+            total_evidence = sum(len(inc.get("evidence", [])) for inc in incidents)
+            investigation_score = min(100.0, 50.0 + (total_evidence * 25.0 / investigated_count))
         else:
             investigation_score = 0.0
             deductions.append("No incidents correlated by Investigation Analyst (-20 pts).")

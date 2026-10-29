@@ -397,8 +397,8 @@ async function pollLiveArenaState() {
         `;
         tbody.prepend(tr);
 
-        // Feed to Red Team feed if malicious or reconnaissance
-        if (t.isMalicious || ['HTTP_REQUEST', 'LOGIN_FAILED', 'API_ANOMALY', 'PARAMETER_TAMPERING', 'SESSION_HIJACK_ATTEMPT', 'ENCRYPTION_INTENT'].includes(t.type)) {
+        // Feed to Red Team feed if malicious adversarial event
+        if (t.isMalicious) {
           const item = document.createElement('div');
           item.className = 'feed-item red';
           item.innerHTML = `

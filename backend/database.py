@@ -205,6 +205,7 @@ def get_exercise(exercise_id: str, db_path: Optional[str] = None) -> Optional[Di
     conn.close()
     if not row:
         return None
+    cfg = json.loads(row["config_json"]) if row["config_json"] else {}
     return {
         "id": row["id"],
         "number": row["number"],
@@ -214,13 +215,14 @@ def get_exercise(exercise_id: str, db_path: Optional[str] = None) -> Optional[Di
         "mode": row["mode"],
         "difficulty": row["difficulty"],
         "seed": row["seed"],
+        "targetAsset": cfg.get("targetAsset"),
         "status": row["status"],
         "currentPhase": row["current_phase"],
         "startedAt": row["started_at"],
         "endedAt": row["ended_at"],
         "durationSeconds": row["duration_seconds"],
         "previousExerciseId": row["previous_exercise_id"],
-        "config": json.loads(row["config_json"]),
+        "config": cfg,
         "createdAt": row["created_at"]
     }
 
@@ -230,24 +232,29 @@ def list_exercises(db_path: Optional[str] = None) -> List[Dict[str, Any]]:
     cur.execute("SELECT * FROM exercises ORDER BY number DESC")
     rows = cur.fetchall()
     conn.close()
-    return [{
-        "id": row["id"],
-        "number": row["number"],
-        "scenarioId": row["scenario_id"],
-        "scenarioName": row["scenario_name"],
-        "environmentId": row["environment_id"],
-        "mode": row["mode"],
-        "difficulty": row["difficulty"],
-        "seed": row["seed"],
-        "status": row["status"],
-        "currentPhase": row["current_phase"],
-        "startedAt": row["started_at"],
-        "endedAt": row["ended_at"],
-        "durationSeconds": row["duration_seconds"],
-        "previousExerciseId": row["previous_exercise_id"],
-        "config": json.loads(row["config_json"]),
-        "createdAt": row["created_at"]
-    } for row in rows]
+    result = []
+    for row in rows:
+        cfg = json.loads(row["config_json"]) if row["config_json"] else {}
+        result.append({
+            "id": row["id"],
+            "number": row["number"],
+            "scenarioId": row["scenario_id"],
+            "scenarioName": row["scenario_name"],
+            "environmentId": row["environment_id"],
+            "mode": row["mode"],
+            "difficulty": row["difficulty"],
+            "seed": row["seed"],
+            "targetAsset": cfg.get("targetAsset"),
+            "status": row["status"],
+            "currentPhase": row["current_phase"],
+            "startedAt": row["started_at"],
+            "endedAt": row["ended_at"],
+            "durationSeconds": row["duration_seconds"],
+            "previousExerciseId": row["previous_exercise_id"],
+            "config": cfg,
+            "createdAt": row["created_at"]
+        })
+    return result
 
 def save_telemetry_batch(events: List[Dict[str, Any]], db_path: Optional[str] = None):
     if not events:
